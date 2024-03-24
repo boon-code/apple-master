@@ -1,0 +1,6 @@
+[submodule "ext/raylib"]
+	path = ext/raylib
+	url = https://github.com/raysan5/raylib.git
+[submodule "ext/raylib-zig"]
+	path = ext/raylib-zig
+	url = https://github.com/Not-Nik/raylib-zig.git
