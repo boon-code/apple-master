@@ -4,8 +4,8 @@ const f32FromInt = @import("util.zig").f32FromInt;
 // Sprites
 
 pub const SpriteSheetUniform = struct {
+    pub const Index = SpriteIndex2D(Self);
     const Self = @This();
-    const Index = SpriteIndex2D(Self);
 
     texture: rl.Texture2D,
     numSprites: i32, // rows
@@ -52,8 +52,8 @@ pub const SpriteSheetUniform = struct {
 
 pub fn SpriteIndex2D(comptime T: type) type {
     return struct {
+        pub const Animated = AnimatedIndexType(Self);
         const Self = @This();
-        const Animated = AnimatedIndexType(Self);
 
         spriteIndex: i32,
         frameIndex: i32,
