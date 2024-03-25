@@ -2,6 +2,8 @@ const std = @import("std");
 const rl = @import("raylib");
 const sprite = @import("sprite.zig");
 const util = @import("util.zig");
+const apple = @import("apple.zig");
+const constants = @import("constants.zig");
 
 const f32FromInt = util.f32FromInt;
 
@@ -34,20 +36,19 @@ pub const State = struct {
     // Implementation
 
     pub fn init() !Self {
-        const textureDir = "resources/textures/";
-        const backgroundTexture = rl.loadTexture(textureDir ++ "BG.png");
+        const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
         errdefer rl.unloadTexture(backgroundTexture);
 
         // Apple sprite
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(textureDir ++ "AE2.png", 8, 8);
+        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
         errdefer appleSpriteSheet.unload();
         const appleAnimIndex = appleSpriteSheet.createIndex(0, 0).createAnimated(APPLE_FRAME_SPEED);
         const pos = rl.Vector2.init(50.0, 50.0);
 
         // Health bar
-        const healthBack = rl.loadTexture(textureDir ++ "STR1.png");
+        const healthBack = rl.loadTexture(constants.TEXTURE_DIR ++ "STR1.png");
         errdefer rl.unloadTexture(healthBack);
-        const healthFront = rl.loadTexture(textureDir ++ "STR2.png");
+        const healthFront = rl.loadTexture(constants.TEXTURE_DIR ++ "STR2.png");
         errdefer rl.unloadTexture(healthFront);
         std.debug.assert(healthBack.width == healthFront.width);
         std.debug.assert(healthBack.height == healthFront.height);
