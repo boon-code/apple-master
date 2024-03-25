@@ -17,3 +17,9 @@ pub const GRAVITY = 1.0;
 
 pub const APPLE_SLOT_MAX = @divFloor(SCREEN_X_APPLES_MAX, APPLE_WIDTH);
 pub const APPLE_SLOT_MIN = 0;
+
+// plus
+pub const PLUS_WIDTH = 14;
+pub const PLUS_HEIGHT = 14;
+pub const PLUS_ANIM_SPEED = 0.025;
+pub const PLUS_WAIT_FIRST = 0.125;

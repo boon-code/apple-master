@@ -72,7 +72,7 @@ pub const AppleManager = struct {
                 i.velocity += constants.GRAVITY * delta;
                 i.position.y += i.velocity * delta * constants.FPS;
 
-                i.appleAnimIndex.update(t);
+                _ = i.appleAnimIndex.update(t);
 
                 self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
 

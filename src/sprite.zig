@@ -73,8 +73,11 @@ pub fn SpriteIndex2D(comptime T: type) type {
             return Self{ .spriteIndex = spriteIndex, .frameIndex = frameIndex, .spriteSheet = spriteSheet };
         }
 
-        pub fn advanceFrame(self: *Self, byNum: i32) void {
-            self.frameIndex = @mod((self.frameIndex + byNum), self.spriteSheet.numFrames);
+        pub fn advanceFrame(self: *Self, byNum: i32) bool {
+            const newIndex = @mod((self.frameIndex + byNum), self.spriteSheet.numFrames);
+            const wrapped = (newIndex < self.frameIndex);
+            self.frameIndex = newIndex;
+            return wrapped;
         }
 
         pub fn setFrameWrap(self: *Self, index: i32) void {
@@ -128,11 +131,19 @@ pub fn AnimatedIndexType(comptime IndexType: type) type {
             return Self{ .index = index, .duration = duration, .nextUpdate = rl.getTime() };
         }
 
-        pub fn update(self: *Self, t: f64) void {
+        pub fn reset(self: *Self, t: f64) void {
+            self.index.setFrameWrap(0);
+            self.nextUpdate = t + self.duration;
+        }
+
+        pub fn update(self: *Self, t: f64) bool {
             if (t >= self.nextUpdate) {
                 const advanceNum = @divFloor((t - self.nextUpdate), self.duration) + 1;
-                self.index.advanceFrame(@intFromFloat(advanceNum));
+                const wrapped = self.index.advanceFrame(@intFromFloat(advanceNum));
                 self.nextUpdate = t + self.duration;
+                return wrapped;
+            } else {
+                return false;
             }
         }
     };
