@@ -13,5 +13,5 @@ pub const APPLE_START_SPEED_MAX: f32 = 1.0;
 
 pub const GRAVITY = 1.0;
 
-pub const APPLE_SLOT_MAX: i32 = @divFloor(SCREEN_X_APPLES_MAX, APPLE_WIDTH);
-pub const APPLE_SLOT_MIN: i32 = 0;
+pub const APPLE_SLOT_MAX = @divFloor(SCREEN_X_APPLES_MAX, APPLE_WIDTH);
+pub const APPLE_SLOT_MIN = 0;

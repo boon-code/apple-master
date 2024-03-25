@@ -11,7 +11,8 @@ const Apple = struct {
     active: bool,
     position: rl.Vector2,
     appleAnimIndex: AnimatedIndex,
-    velocity_y: f32,
+    velocity: f32,
+    slot: usize,
 };
 
 pub const AppleManager = struct {
@@ -25,6 +26,7 @@ pub const AppleManager = struct {
 
     count: i32,
     nextSpawn: f64,
+    slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool,
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         var apples = try allocator.alloc(Apple, 500);
@@ -34,6 +36,10 @@ pub const AppleManager = struct {
         }
 
         const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
+        var slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
+        for (&slotBlocked) |*i| {
+            i.* = false;
+        }
 
         return Self{
             .appleSpriteSheet = appleSpriteSheet,
@@ -41,6 +47,7 @@ pub const AppleManager = struct {
             .allocator = allocator,
             .count = 0,
             .nextSpawn = rl.getTime(),
+            .slotBlocked = slotBlocked,
         };
     }
 
@@ -62,8 +69,8 @@ pub const AppleManager = struct {
         var num = self.count;
         for (self.apples) |*i| {
             if (i.active) {
-                i.velocity_y += constants.GRAVITY * delta;
-                i.position.y += i.velocity_y * delta * constants.FPS;
+                i.velocity += constants.GRAVITY * delta;
+                i.position.y += i.velocity * delta * constants.FPS;
 
                 i.appleAnimIndex.update(t);
 
@@ -71,6 +78,7 @@ pub const AppleManager = struct {
 
                 if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
                     i.active = false;
+                    self.slotBlocked[i.slot] = false;
                     self.count -= 1;
                     std.debug.print("Removed apple: count={d}\n", .{self.count});
                 }
@@ -85,13 +93,32 @@ pub const AppleManager = struct {
     fn spawnNew(self: *Self) void {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
-        const posX: f32 = util.f32FromInt(rl.getRandomValue(constants.APPLE_SLOT_MIN, constants.APPLE_SLOT_MAX)) * constants.APPLE_WIDTH;
+        const slot = self.nextSlot();
+        const posX: f32 = util.f32FromInt(slot) * constants.APPLE_WIDTH;
+        apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
         apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED);
-        apple.velocity_y = util.getRandom(f32, constants.APPLE_START_SPEED_MIN, constants.APPLE_START_SPEED_MAX);
+        apple.velocity = util.getRandom(f32, constants.APPLE_START_SPEED_MIN, constants.APPLE_START_SPEED_MAX);
         apple.active = true;
 
+        self.slotBlocked[slot] = true;
+
         self.count += 1;
+    }
+
+    fn nextSlot(self: *Self) usize {
+        const N = constants.APPLE_SLOT_MAX + 1;
+        var slot: usize = @intCast(rl.getRandomValue(constants.APPLE_SLOT_MIN, constants.APPLE_SLOT_MAX));
+        if (self.slotBlocked[slot]) {
+            for (0..constants.APPLE_SLOT_MAX) |_| {
+                slot = @mod(slot + 1, N);
+                if (!self.slotBlocked[slot]) {
+                    return slot;
+                }
+            }
+            @panic("No slot available");
+        }
+        return slot;
     }
 
     fn nextUnused(self: *Self) *Apple {
