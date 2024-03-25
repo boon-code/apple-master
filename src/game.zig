@@ -24,6 +24,7 @@ pub const State = struct {
     appleSpriteSheet: sprite.SpriteSheetUniform,
     appleAnimIndex: AnimationIndex,
     pos: rl.Vector2,
+    appleManager: apple.AppleManager,
 
     healthBack: rl.Texture2D,
     healthFront: rl.Texture2D,
@@ -61,6 +62,7 @@ pub const State = struct {
             .appleSpriteSheet = appleSpriteSheet,
             .appleAnimIndex = appleAnimIndex,
             .pos = pos,
+            .appleManager = man,
             .healthBack = healthBack,
             .healthFront = healthFront,
             .delta = 0,
@@ -103,9 +105,10 @@ pub const State = struct {
 
     pub fn updateMovement(self: *Self) void {
         self.appleAnimIndex.update(self.time);
+        self.appleManager.update(self.time);
     }
 
-    pub fn draw(self: Self) void {
+    pub fn draw(self: *Self) void {
         var buf: [100:0]u8 = undefined;
         // Background
         rl.drawTexture(self.backgroundTexture, 0.0, 0.0, rl.Color.white);
@@ -117,6 +120,7 @@ pub const State = struct {
 
         // Apple
         self.appleSpriteSheet.draw(self.pos, self.appleAnimIndex.index, .normal);
+        self.appleManager.drawUpdate(self.time, self.delta);
     }
 
     pub fn unload(self: *Self) void {
