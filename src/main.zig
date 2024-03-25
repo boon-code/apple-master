@@ -47,6 +47,8 @@ pub fn main() anyerror!void {
         gameState.draw();
 
         rl.drawText("Apple Master!", 500, 100, 20, rl.Color.light_gray);
+        rl.drawText("Press q to quit", 500, 125, 20, rl.Color.light_gray);
+
         rl.drawFPS(20, 20);
         //----------------------------------------------------------------------------------
     }
