@@ -16,7 +16,7 @@ pub fn main() anyerror!void {
 
     var gameState = try game.State.init();
 
-    //rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
+    rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     rl.setExitKey(.key_q);

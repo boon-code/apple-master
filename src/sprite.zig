@@ -12,6 +12,9 @@ pub const SpriteSheetUniform = struct {
     numFrames: i32, // cols
     rec: rl.Rectangle,
 
+    frameHeight: f32,
+    frameWidth: f32,
+
     pub fn init(texture: rl.Texture2D, numSprites: i32, numFrames: i32) Self {
         std.debug.assert(numFrames > 0);
         std.debug.assert(numSprites > 0);
@@ -22,6 +25,8 @@ pub const SpriteSheetUniform = struct {
             .numSprites = numSprites,
             .numFrames = numFrames,
             .rec = rl.Rectangle.init(0.0, 0.0, frameWidth, frameHeight),
+            .frameWidth = frameWidth,
+            .frameHeight = frameHeight,
         };
     }
 
@@ -35,6 +40,11 @@ pub const SpriteSheetUniform = struct {
     }
 
     pub fn draw(self: Self, position: rl.Vector2, index: Index, mode: DrawMode) void {
+        const rec = self.getSourceRect(index, mode);
+        rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
+    }
+
+    pub inline fn getSourceRect(self: Self, index: Index, mode: DrawMode) rl.Rectangle {
         var rec = self.rec;
         rec.y = index.spriteIndexF32() * self.rec.height;
         rec.x = index.frameIndexF32() * self.rec.width;
@@ -42,7 +52,7 @@ pub const SpriteSheetUniform = struct {
             .normal => {},
             .flip_vertical => rec.width *= -1.0,
         }
-        rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
+        return rec;
     }
 
     pub fn unload(self: *Self) void {
@@ -65,6 +75,10 @@ pub fn SpriteIndex2D(comptime T: type) type {
 
         pub fn advanceFrame(self: *Self, byNum: i32) void {
             self.frameIndex = @mod((self.frameIndex + byNum), self.spriteSheet.numFrames);
+        }
+
+        pub fn setFrameWrap(self: *Self, index: i32) void {
+            self.frameIndex = @mod(index, self.spriteSheet.numFrames);
         }
 
         pub fn setSprite(self: *Self, index: i32) void {
