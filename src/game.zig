@@ -14,6 +14,7 @@ pub const State = struct {
 
     // Constants
     const APPLE_FRAME_SPEED = 0.075; // seconds
+    const HEALTH_BAR_X = 870.0;
 
     // Sprites
     backgroundTexture: rl.Texture2D,
@@ -28,6 +29,7 @@ pub const State = struct {
     delta: f32,
     time: f64,
     health: f32,
+    score: u64,
 
     // Implementation
 
@@ -50,7 +52,6 @@ pub const State = struct {
         std.debug.assert(healthBack.width == healthFront.width);
         std.debug.assert(healthBack.height == healthFront.height);
 
-
         return Self{
             .backgroundTexture = backgroundTexture,
             .appleSpriteSheet = appleSpriteSheet,
@@ -61,6 +62,7 @@ pub const State = struct {
             .delta = 0,
             .time = rl.getTime(),
             .health = 100.0,
+            .score = 0,
         };
     }
 
@@ -122,22 +124,38 @@ pub const State = struct {
     }
 
     fn drawHealthBar(self: Self) void {
+        const barY = 100.0;
         const frameWidth = f32FromInt(self.healthBack.width);
         const frameHeight = f32FromInt(self.healthBack.height);
         const origin = rl.Vector2.init(0.0, 0.0);
         const dstWidth = frameWidth * 2.0;
         const dstHeight = frameHeight * 2.0;
         // Back
-        const dstBack = rl.Rectangle.init(860.0, 100.0, dstWidth, dstHeight);
+        const dstBack = rl.Rectangle.init(HEALTH_BAR_X, barY, dstWidth, dstHeight);
         const srcBack = rl.Rectangle.init(0, 0, frameWidth, frameHeight);
         // Front
         const f = (100.0 - self.health) / 100.0;
         var srcDy = frameHeight * f;
         var dstDy = dstHeight * f;
-        const dstFront = rl.Rectangle.init(dstBack.x, dstBack.y + dstDy, dstWidth, dstHeight - dstDy);
+        const dstFront = rl.Rectangle.init(HEALTH_BAR_X, barY + dstDy, dstWidth, dstHeight - dstDy);
         const srcFront = rl.Rectangle.init(0, srcDy, frameWidth, frameHeight - srcDy);
+
+        self.drawHealtText();
 
         rl.drawTexturePro(self.healthBack, srcBack, dstBack, origin, 0.0, rl.Color.white);
         rl.drawTexturePro(self.healthFront, srcFront, dstFront, origin, 0.0, rl.Color.white);
+    }
+
+    fn drawHealtText(self: Self) void {
+        var buf: [100]u8 = undefined;
+
+        const health: i32 = @intFromFloat(self.health);
+        if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
+            rl.drawText(text, HEALTH_BAR_X, 70, 20, rl.Color.light_gray);
+        } else |_| {}
+
+        if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
+            rl.drawText(text, HEALTH_BAR_X, 45, 20, rl.Color.light_gray);
+        } else |_| {}
     }
 };
