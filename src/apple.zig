@@ -57,7 +57,7 @@ pub const AppleManager = struct {
                 self.spawnNew();
                 std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
             }
-            self.nextSpawn = t + 0.5;
+            self.nextSpawn = t + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
         }
     }
 
