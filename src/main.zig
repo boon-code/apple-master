@@ -21,6 +21,9 @@ pub fn main() anyerror!void {
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
+    rl.hideCursor();
+    defer rl.showCursor();
+
     rl.setExitKey(.key_q);
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
