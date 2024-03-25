@@ -91,12 +91,12 @@ pub const State = struct {
         }
 
         if (rl.isKeyDown(.key_m)) {
-            self.health -= 1.0;
+            self.health -= 1.0 * self.delta * constants.FPS;
             if (self.health < 0.0) {
                 self.health = 0.0;
             }
         } else if (rl.isKeyDown(.key_p)) {
-            self.health += 1.0;
+            self.health += 1.0 * self.delta * constants.FPS;
             if (self.health > 100.0) {
                 self.health = 100.0;
             }
