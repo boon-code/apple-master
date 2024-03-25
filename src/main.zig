@@ -4,11 +4,15 @@ const std = @import("std");
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const screenWidth = 800;
-    const screenHeight = 450;
+    const screenWidth = 1024;
+    const screenHeight = 768;
 
     rl.initWindow(screenWidth, screenHeight, "Apple Master Revived");
     defer rl.closeWindow(); // Close window and OpenGL context
+
+    const textureDir = "resources/textures/";
+    const backgroundTexture = rl.loadTexture(textureDir ++ "BG.png");
+    defer rl.unloadTexture(backgroundTexture);
 
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -31,6 +35,7 @@ pub fn main() anyerror!void {
         defer rl.endDrawing();
 
         rl.clearBackground(rl.Color.white);
+        rl.drawTexture(backgroundTexture, 0.0, 0.0, rl.Color.white);
 
         rl.drawText("Apple Master!", 200, 100, 20, rl.Color.light_gray);
         rl.drawFPS(20, 20);
