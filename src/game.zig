@@ -85,9 +85,9 @@ pub const State = struct {
         }
 
         if (rl.isKeyDown(.key_left)) {
-            self.pos.x -= 5.0 * self.delta * 60.0;
+            self.pos.x -= 5.0 * self.delta * constants.FPS;
         } else if (rl.isKeyDown(.key_right)) {
-            self.pos.x += 5.0 * self.delta * 60.0;
+            self.pos.x += 5.0 * self.delta * constants.FPS;
         }
 
         if (rl.isKeyDown(.key_m)) {

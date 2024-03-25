@@ -45,9 +45,12 @@ pub const AppleManager = struct {
     }
 
     pub fn update(self: *Self, t: f64) void {
-        if ((self.nextSpawn < t) and (self.count < MAX_COUNT)) {
+        if (self.nextSpawn < t) {
+            if (self.count < MAX_COUNT) {
+                self.spawnNew();
+                std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
+            }
             self.nextSpawn = t + 0.5;
-            self.spawnNew();
         }
     }
 
@@ -56,14 +59,25 @@ pub const AppleManager = struct {
     }
 
     pub fn drawUpdate(self: *Self, t: f64, delta: f32) void {
+        var num = self.count;
         for (self.apples) |*i| {
             if (i.active) {
                 i.velocity_y += constants.GRAVITY * delta;
-                i.position.y -= i.velocity_y * delta;
+                i.position.y += i.velocity_y * delta * constants.FPS;
 
                 i.appleAnimIndex.update(t);
 
                 self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+
+                if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
+                    i.active = false;
+                    self.count -= 1;
+                    std.debug.print("Removed apple: count={d}\n", .{self.count});
+                }
+                num -= 1;
+                if (num <= 0) {
+                    return;
+                }
             }
         }
     }
@@ -71,10 +85,13 @@ pub const AppleManager = struct {
     fn spawnNew(self: *Self) void {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
-        apple.position = rl.Vector2.init(util.getRandom(f32, 0, constants.SCREEN_X_APPLES_MAX), -constants.APPLE_HEIGHT);
-        apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ROTATION_SPEED);
+        const posX: f32 = util.f32FromInt(rl.getRandomValue(constants.APPLE_SLOT_MIN, constants.APPLE_SLOT_MAX)) * constants.APPLE_WIDTH;
+        apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
+        apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED);
         apple.velocity_y = util.getRandom(f32, constants.APPLE_START_SPEED_MIN, constants.APPLE_START_SPEED_MAX);
         apple.active = true;
+
+        self.count += 1;
     }
 
     fn nextUnused(self: *Self) *Apple {
