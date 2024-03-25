@@ -14,7 +14,9 @@ pub fn main() anyerror!void {
     rl.initWindow(screenWidth, screenHeight, "Apple Master Revived");
     defer rl.closeWindow(); // Close window and OpenGL context
 
-    var gameState = try game.State.init();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    var gameState = try game.State.init(allocator);
 
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------

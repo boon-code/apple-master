@@ -12,18 +12,16 @@ const Apple = struct {
     appleAnimIndex: AnimatedIndex,
 };
 
-const AppleManager = struct {
+pub const AppleManager = struct {
     const Self = @This();
 
     appleSpriteSheet: sprite.SpriteSheetUniform,
     apples: []Apple,
     allocator: std.mem.Allocator,
 
-    pub fn init() !Self {
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        const allocator = try gpa.allocator();
-        const apples = allocator.alloc(Apple, 500);
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.textureDir ++ "AE2.png", 8, 8);
+    pub fn init(allocator: std.mem.Allocator) !Self {
+        const apples = try allocator.alloc(Apple, 500);
+        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
 
         return Self{
             .appleSpriteSheet = appleSpriteSheet,

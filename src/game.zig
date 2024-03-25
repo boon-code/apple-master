@@ -35,15 +35,18 @@ pub const State = struct {
 
     // Implementation
 
-    pub fn init() !Self {
+    pub fn init(allocator: std.mem.Allocator) !Self {
         const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
         errdefer rl.unloadTexture(backgroundTexture);
 
         // Apple sprite
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
+        var appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
         errdefer appleSpriteSheet.unload();
         const appleAnimIndex = appleSpriteSheet.createIndex(0, 0).createAnimated(APPLE_FRAME_SPEED);
         const pos = rl.Vector2.init(50.0, 50.0);
+
+        var man = try apple.AppleManager.init(allocator);
+        errdefer man.unload();
 
         // Health bar
         const healthBack = rl.loadTexture(constants.TEXTURE_DIR ++ "STR1.png");
