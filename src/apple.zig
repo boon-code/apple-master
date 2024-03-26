@@ -67,6 +67,9 @@ pub const AppleManager = struct {
 
     pub fn drawUpdate(self: *Self, t: f64, delta: f32) void {
         var num = self.count;
+        if (num <= 0) {
+            return;
+        }
         for (self.apples) |*i| {
             if (i.active) {
                 i.velocity += constants.GRAVITY * delta;
