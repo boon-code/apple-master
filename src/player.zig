@@ -8,6 +8,7 @@ const f32FromInt = util.f32FromInt;
 
 pub const Player = struct {
     const Self = @This();
+    const X_MAX = constants.SCREEN_X_AREA - 141.0;
 
     basketTexture: rl.Texture2D,
     rect: rl.Rectangle,
@@ -29,11 +30,45 @@ pub const Player = struct {
         };
     }
 
+    pub fn updateKeys(self: *Self, delta: f32) void {
+        const velocity = Self.getSpeed() * delta * constants.FPS;
+
+        if (rl.isKeyDown(.key_left)) {
+            self.position.x -= velocity;
+        } else if (rl.isKeyDown(.key_right)) {
+            self.position.x += velocity;
+        }
+
+        if (self.position.x <= 0.0) {
+            self.position.x = 0.0;
+        } else if (self.position.x >= X_MAX) {
+            self.position.x = X_MAX;
+        }
+
+        if (rl.isKeyPressed(.key_down)) {
+            self.position.y += 1.0;
+        } else if (rl.isKeyPressed(.key_up)) {
+            self.position.y -= 1.0;
+        }
+    }
+
     pub fn draw(self: Self) void {
         rl.drawTextureRec(self.basketTexture, self.rect, self.position, rl.Color.white);
     }
 
     pub fn unload(self: *Self) void {
         rl.unloadTexture(self.basketTexture);
+    }
+
+    fn isFastDown() bool {
+        return rl.isKeyDown(.key_left_shift) or rl.isKeyDown(.key_right_shift);
+    }
+
+    fn getSpeed() f32 {
+        if (Self.isFastDown()) {
+            return 30.0;
+        } else {
+            return 10.0;
+        }
     }
 };

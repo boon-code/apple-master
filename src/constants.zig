@@ -1,7 +1,8 @@
 pub const TEXTURE_DIR = "resources/textures/";
 
 // screen layout
-pub const SCREEN_X_APPLES_MAX = 835 - APPLE_WIDTH;
+pub const SCREEN_X_AREA = 835;
+pub const SCREEN_X_APPLES_MAX = SCREEN_X_AREA - APPLE_WIDTH;
 pub const SCREEN_Y_APPLES_MAX = 768 - (APPLE_HEIGHT * 2 / 3);
 pub const APPLE_HEIGHT = 68;
 pub const APPLE_WIDTH = 68;

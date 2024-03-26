@@ -123,6 +123,8 @@ pub const State = struct {
         if (rl.isKeyDown(.key_w)) {
             self.showPlus();
         }
+
+        self.player.updateKeys(self.delta);
     }
 
     pub fn updateMovement(self: *Self) void {
