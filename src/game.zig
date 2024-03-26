@@ -4,6 +4,7 @@ const sprite = @import("sprite.zig");
 const util = @import("util.zig");
 const apple = @import("apple.zig");
 const constants = @import("constants.zig");
+const player = @import("player.zig");
 
 const f32FromInt = util.f32FromInt;
 
@@ -32,6 +33,8 @@ pub const State = struct {
     plusSpriteSheet: sprite.SpriteSheetUniform,
     plusAnimIndex: AnimationIndex,
     plusShow: bool,
+
+    player: player.Player,
 
     delta: f32,
     time: f64,
@@ -65,6 +68,9 @@ pub const State = struct {
         var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
         errdefer plusSpriteSheet.unload();
 
+        const p = player.Player.init();
+        errdefer p.unload();
+
         return Self{
             .backgroundTexture = backgroundTexture,
             .appleSpriteSheet = appleSpriteSheet,
@@ -76,6 +82,7 @@ pub const State = struct {
             .plusSpriteSheet = plusSpriteSheet,
             .plusAnimIndex = plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED),
             .plusShow = false,
+            .player = p,
             .delta = 0,
             .time = rl.getTime(),
             .health = 100.0,
@@ -139,7 +146,7 @@ pub const State = struct {
     pub fn draw(self: *Self) void {
         var buf: [100:0]u8 = undefined;
         // Background
-        rl.drawTexture(self.backgroundTexture, 0.0, 0.0, rl.Color.white);
+        rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
         if (std.fmt.bufPrintZ(&buf, "Position: {d}", .{self.pos.x})) |text| {
             rl.drawText(text, 0, 100, 20, rl.Color.light_gray);
         } else |_| {}
@@ -149,6 +156,9 @@ pub const State = struct {
         // Apple
         self.appleSpriteSheet.draw(self.pos, self.appleAnimIndex.index, .normal);
         self.appleManager.drawUpdate(self.time, self.delta);
+
+        // Basket
+        self.player.draw();
 
         if (self.plusShow) {
             const pos = rl.Vector2.init(400, 400);
@@ -166,6 +176,7 @@ pub const State = struct {
         self.appleSpriteSheet.unload();
         self.healthSpriteSheet.unload();
         self.plusSpriteSheet.unload();
+        self.player.unload();
     }
 
     fn drawHealthBar(self: Self) void {
