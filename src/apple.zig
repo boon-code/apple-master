@@ -88,6 +88,7 @@ pub const AppleManager = struct {
                 }
             }
         }
+        unreachable;
     }
 
     fn spawnNew(self: *Self) void {
