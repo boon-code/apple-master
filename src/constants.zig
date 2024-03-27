@@ -1,12 +1,14 @@
 pub const TEXTURE_DIR = "resources/textures/";
 
 // target FPS
-pub const FPS: f32 = 60.0;
+//pub const FPS: f32 = 60.0;
+pub const FPS: f32 = 6.0;
 
 // screen layout
 pub const SCREEN_X_AREA = 835;
 pub const SCREEN_X_APPLES_MAX = SCREEN_X_AREA - APPLE_WIDTH;
 pub const SCREEN_Y_APPLES_MAX = 768 - (APPLE_HEIGHT * 2 / 3);
+pub const HEALTH_BAR_X = 870.0;
 
 // apple
 pub const APPLE_PIC = "AE3.png";
@@ -35,3 +37,5 @@ pub const PLUS_WAIT_FIRST = 0.125;
 
 // basket
 pub const BASKET_WIDTH = 141;
+pub const BASKET_SPEED_NORMAL = 10.0;
+pub const BASKET_SPEED_FAST = 30.0;

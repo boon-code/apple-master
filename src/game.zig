@@ -15,10 +15,6 @@ pub const State = struct {
     const SpriteIndex = sprite.SpriteSheetUniform.Index;
     const AnimationIndex = sprite.SpriteSheetUniform.Index.Animated;
 
-    // Constants
-    const APPLE_FRAME_SPEED = 0.075; // seconds
-    const HEALTH_BAR_X = 870.0;
-
     // Sprites
     backgroundTexture: rl.Texture2D,
 
@@ -158,13 +154,13 @@ pub const State = struct {
         const dstWidth = frameWidth * 2.0;
         const dstHeight = frameHeight * 2.0;
         // Back
-        const dstBack = rl.Rectangle.init(HEALTH_BAR_X, barY, dstWidth, dstHeight);
+        const dstBack = rl.Rectangle.init(constants.HEALTH_BAR_X, barY, dstWidth, dstHeight);
         const srcBack = rl.Rectangle.init(0, 0, frameWidth, frameHeight);
         // Front
         const f = (100.0 - self.health) / 100.0;
         var srcDy = frameHeight * f;
         var dstDy = dstHeight * f;
-        const dstFront = rl.Rectangle.init(HEALTH_BAR_X, barY + dstDy, dstWidth, dstHeight - dstDy);
+        const dstFront = rl.Rectangle.init(constants.HEALTH_BAR_X, barY + dstDy, dstWidth, dstHeight - dstDy);
         const srcFront = rl.Rectangle.init(0, srcDy, frameWidth, frameHeight - srcDy);
 
         self.drawHealtText();
@@ -178,11 +174,11 @@ pub const State = struct {
 
         const health: i32 = @intFromFloat(self.health);
         if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
-            rl.drawText(text, HEALTH_BAR_X, 70, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.HEALTH_BAR_X, 70, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
-            rl.drawText(text, HEALTH_BAR_X, 45, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.HEALTH_BAR_X, 45, 20, rl.Color.light_gray);
         } else |_| {}
     }
 };

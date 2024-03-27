@@ -8,13 +8,12 @@ const f32FromInt = util.f32FromInt;
 
 pub const Player = struct {
     const Self = @This();
-    const X_MAX = constants.SCREEN_X_AREA - 141.0;
-    pub const Y_POS = constants.SCREEN_Y_APPLES_MAX - 10.0;
+    const X_MAX = (constants.APPLE_SLOT_MAX + 1) * constants.APPLE_SLOT_WIDTH - constants.BASKET_WIDTH;
 
     basketTexture: rl.Texture2D,
     rect: rl.Rectangle,
     position: rl.Vector2,
-    velocity: f32,
+    velocityFactor: f32,
     direction: f32,
     snapDistance: f32,
 
@@ -29,14 +28,26 @@ pub const Player = struct {
             .basketTexture = basketTexture,
             .rect = rect,
             .position = pos,
-            .velocity = 0.0,
+            .velocityFactor = 0.0,
             .direction = 0.0,
             .snapDistance = 0.0,
         };
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        var velocity = Self.getSpeed() * delta * constants.FPS;
+        const speedFactor = delta * constants.FPS;
+
+        self.velocityFactor += 0.1 * speedFactor;
+        if (self.velocityFactor > 1.0) {
+            self.velocityFactor = 1.0;
+        }
+
+        var velocity: f32 = undefined;
+        if (Self.isFastDown()) {
+            velocity = constants.BASKET_SPEED_FAST * speedFactor;
+        } else {
+            velocity = constants.BASKET_SPEED_NORMAL * self.velocityFactor * speedFactor;
+        }
 
         if (rl.isKeyDown(.key_left)) {
             self.direction = -1.0;
@@ -47,6 +58,7 @@ pub const Player = struct {
         } else { // neither left nor right is pressed
             if (self.snapDistance <= 0.0) {
                 self.direction = 0.0;
+                self.velocityFactor = 0.0;
             } else {
                 self.snapDistance -= velocity;
                 if (self.snapDistance <= 0.0) {
@@ -101,7 +113,7 @@ pub const Player = struct {
     fn getNextSnap(x: f32) f32 {
         const next = Self.getLastSnapIndex(x + constants.BASKET_WIDTH) + 1;
         if (next > constants.APPLE_SLOT_MAX) {
-            return constants.SCREEN_X_AREA - constants.BASKET_WIDTH;
+            return X_MAX;
         }
         var newX: f32 = @floatFromInt(next);
         newX = newX * constants.APPLE_SLOT_WIDTH - constants.BASKET_WIDTH;
@@ -114,7 +126,20 @@ pub const Player = struct {
     }
 
     pub fn draw(self: Self) void {
+        self.drawDebugText();
         rl.drawTextureRec(self.basketTexture, self.rect, self.position, rl.Color.white);
+    }
+
+    fn drawDebugText(self: Self) void {
+        var buf: [100]u8 = undefined;
+
+        if (std.fmt.bufPrintZ(&buf, "Position: {d}", .{self.position.x})) |text| {
+            rl.drawText(text, constants.HEALTH_BAR_X, 20, 20, rl.Color.light_gray);
+        } else |_| {}
+
+        if (std.fmt.bufPrintZ(&buf, "Snap: {d}", .{self.snapDistance})) |text| {
+            rl.drawText(text, constants.HEALTH_BAR_X, 400, 20, rl.Color.light_gray);
+        } else |_| {}
     }
 
     pub fn unload(self: *Self) void {
@@ -123,13 +148,5 @@ pub const Player = struct {
 
     fn isFastDown() bool {
         return rl.isKeyDown(.key_left_shift) or rl.isKeyDown(.key_right_shift);
-    }
-
-    fn getSpeed() f32 {
-        if (Self.isFastDown()) {
-            return 30.0;
-        } else {
-            return 10.0;
-        }
     }
 };
