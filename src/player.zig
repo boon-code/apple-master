@@ -80,6 +80,10 @@ pub const Player = struct {
             }
         }
 
+        if (self.snapDistance < 0.0) {
+            self.snapDistance = 0.0;
+        }
+
         self.position.x += velocity * self.direction;
 
         if (self.position.x < 0.0) {
@@ -98,19 +102,11 @@ pub const Player = struct {
     fn calcLeftSnap(self: *Self) void {
         const last = Self.getLastSnap(self.position.x);
         self.snapDistance = self.position.x - last;
-
-        if (self.snapDistance < 0.0) {
-            self.snapDistance = 0.0;
-        }
     }
 
     fn calcRightSnap(self: *Self) void {
         const next = Self.getNextSnap(self.position.x);
         self.snapDistance = next - self.position.x;
-
-        if (self.snapDistance < 0.0) {
-            self.snapDistance = 0.0;
-        }
     }
 
     fn getLastSnapIndex(x: f32) i32 {
