@@ -1,7 +1,8 @@
 pub const TEXTURE_DIR = "resources/textures/";
 
 // target FPS
-pub var FPS: f32 = 60.0;
+const INITIAL_FPS: f32 = 60.0;
+pub var FPS: f32 = INITIAL_FPS;
 
 // screen layout
 pub const SCREEN_X_AREA = 835;
@@ -21,7 +22,7 @@ pub const APPLE_START_SPEED_MAX: f32 = 1.0;
 pub const APPLE_SPAWN_WAIT_MIN: f32 = -7.0; // just change the odds
 pub const APPLE_SPAWN_WAIT_MAX: f32 = 5.0;
 
-pub const GRAVITY = 1.0;
+pub const GRAVITY: f32 = 1.0 / INITIAL_FPS;
 
 pub const SLOT_OFFSET_X = 1;
 pub const APPLE_SLOT_WIDTH = APPLE_WIDTH + SLOT_OFFSET_X * 2;

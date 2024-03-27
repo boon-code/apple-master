@@ -72,7 +72,7 @@ pub const AppleManager = struct {
         }
         for (self.apples) |*i| {
             if (i.active) {
-                i.velocity += constants.GRAVITY * delta;
+                i.velocity += constants.GRAVITY * delta * constants.FPS;
                 i.position.y += i.velocity * delta * constants.FPS;
 
                 _ = i.appleAnimIndex.update(t);
