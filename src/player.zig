@@ -9,11 +9,14 @@ const f32FromInt = util.f32FromInt;
 pub const Player = struct {
     const Self = @This();
     const X_MAX = constants.SCREEN_X_AREA - 141.0;
+    pub const Y_POS = constants.SCREEN_Y_APPLES_MAX - 10.0;
 
     basketTexture: rl.Texture2D,
     rect: rl.Rectangle,
     position: rl.Vector2,
     velocity: f32,
+    direction: f32,
+    snapDistance: f32,
 
     pub fn init() Self {
         const basketTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "KB2.png");
@@ -27,17 +30,33 @@ pub const Player = struct {
             .rect = rect,
             .position = pos,
             .velocity = 0.0,
+            .direction = 0.0,
+            .snapDistance = 0.0,
         };
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        const velocity = Self.getSpeed() * delta * constants.FPS;
+        var velocity = Self.getSpeed() * delta * constants.FPS;
 
         if (rl.isKeyDown(.key_left)) {
-            self.position.x -= velocity;
+            self.direction = -1.0;
+            self.calcLeftSnap();
         } else if (rl.isKeyDown(.key_right)) {
-            self.position.x += velocity;
+            self.direction = 1.0;
+            self.calcRightSnap();
+        } else { // neither left nor right is pressed
+            if (self.snapDistance <= 0.0) {
+                self.direction = 0.0;
+            } else {
+                self.snapDistance -= velocity;
+                if (self.snapDistance <= 0.0) {
+                    velocity += self.snapDistance; // reduce the velocity
+                    self.snapDistance = 0.0;
+                }
+            }
         }
+
+        self.position.x += velocity * self.direction;
 
         if (self.position.x <= 0.0) {
             self.position.x = 0.0;
@@ -49,6 +68,48 @@ pub const Player = struct {
             self.position.y += 1.0;
         } else if (rl.isKeyPressed(.key_up)) {
             self.position.y -= 1.0;
+        }
+    }
+
+    fn calcLeftSnap(self: *Self) void {
+        const last = Self.getLastSnap(self.position.x);
+        self.snapDistance = self.position.x - last;
+
+        if (self.snapDistance < 0.0) {
+            self.snapDistance = 0.0;
+        }
+    }
+
+    fn calcRightSnap(self: *Self) void {
+        const next = Self.getNextSnap(self.position.x);
+        self.snapDistance = next - self.position.x;
+
+        if (self.snapDistance < 0.0) {
+            self.snapDistance = 0.0;
+        }
+    }
+
+    fn getLastSnapIndex(x: f32) i32 {
+        return @divFloor(@as(i32, @intFromFloat(x)), constants.APPLE_SLOT_WIDTH);
+    }
+
+    fn getLastSnap(x: f32) f32 {
+        const snapX = Self.getLastSnapIndex(x) * constants.APPLE_SLOT_WIDTH;
+        return @floatFromInt(snapX);
+    }
+
+    fn getNextSnap(x: f32) f32 {
+        const next = Self.getLastSnapIndex(x + constants.BASKET_WIDTH) + 1;
+        if (next > constants.APPLE_SLOT_MAX) {
+            return constants.SCREEN_X_AREA - constants.BASKET_WIDTH;
+        }
+        var newX: f32 = @floatFromInt(next);
+        newX = newX * constants.APPLE_SLOT_WIDTH - constants.BASKET_WIDTH;
+
+        if (newX > x) {
+            return newX;
+        } else {
+            return x;
         }
     }
 

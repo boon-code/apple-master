@@ -35,7 +35,7 @@ pub const AppleManager = struct {
             i.active = false;
         }
 
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
+        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
         var slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
         for (&slotBlocked) |*i| {
             i.* = false;
@@ -98,7 +98,7 @@ pub const AppleManager = struct {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
         const slot = self.nextSlot();
-        const posX: f32 = util.f32FromInt(slot) * constants.APPLE_WIDTH;
+        const posX: f32 = util.f32FromInt(slot) * constants.APPLE_SLOT_WIDTH + constants.SLOT_OFFSET_X;
         apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
         apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED);

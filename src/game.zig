@@ -48,7 +48,7 @@ pub const State = struct {
         errdefer rl.unloadTexture(backgroundTexture);
 
         // Apple sprite
-        var appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE2.png", 8, 8);
+        var appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
         errdefer appleSpriteSheet.unload();
         const appleAnimIndex = appleSpriteSheet.createIndex(0, 0).createAnimated(APPLE_FRAME_SPEED);
         const pos = rl.Vector2.init(50.0, 50.0);
