@@ -22,9 +22,6 @@ pub const State = struct {
     // Sprites
     backgroundTexture: rl.Texture2D,
 
-    appleSpriteSheet: sprite.SpriteSheetUniform,
-    appleAnimIndex: AnimationIndex,
-    pos: rl.Vector2,
     appleManager: apple.AppleManager,
 
     healthBack: rl.Texture2D,
@@ -47,12 +44,6 @@ pub const State = struct {
         const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
         errdefer rl.unloadTexture(backgroundTexture);
 
-        // Apple sprite
-        var appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
-        errdefer appleSpriteSheet.unload();
-        const appleAnimIndex = appleSpriteSheet.createIndex(0, 0).createAnimated(APPLE_FRAME_SPEED);
-        const pos = rl.Vector2.init(50.0, 50.0);
-
         var man = try apple.AppleManager.init(allocator);
         errdefer man.unload();
 
@@ -73,9 +64,6 @@ pub const State = struct {
 
         return Self{
             .backgroundTexture = backgroundTexture,
-            .appleSpriteSheet = appleSpriteSheet,
-            .appleAnimIndex = appleAnimIndex,
-            .pos = pos,
             .appleManager = man,
             .healthBack = healthBack,
             .healthFront = healthFront,
@@ -96,18 +84,6 @@ pub const State = struct {
     }
 
     pub fn updateKeys(self: *Self) void {
-        if (rl.isKeyPressed(.key_down)) {
-            self.appleAnimIndex.index.nextSprite();
-        } else if (rl.isKeyPressed(.key_up)) {
-            self.appleAnimIndex.index.previousSprite();
-        }
-
-        if (rl.isKeyDown(.key_left)) {
-            self.pos.x -= 5.0 * self.delta * constants.FPS;
-        } else if (rl.isKeyDown(.key_right)) {
-            self.pos.x += 5.0 * self.delta * constants.FPS;
-        }
-
         if (rl.isKeyDown(.key_m)) {
             self.health -= 1.0 * self.delta * constants.FPS;
             if (self.health < 0.0) {
@@ -128,7 +104,6 @@ pub const State = struct {
     }
 
     pub fn updateMovement(self: *Self) void {
-        _ = self.appleAnimIndex.update(self.time);
         _ = self.appleManager.update(self.time);
 
         if (self.plusShow) {
@@ -146,17 +121,11 @@ pub const State = struct {
     }
 
     pub fn draw(self: *Self) void {
-        var buf: [100:0]u8 = undefined;
         // Background
         rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
-        if (std.fmt.bufPrintZ(&buf, "Position: {d}", .{self.pos.x})) |text| {
-            rl.drawText(text, 0, 100, 20, rl.Color.light_gray);
-        } else |_| {}
-
         self.drawHealthBar();
 
         // Apple
-        self.appleSpriteSheet.draw(self.pos, self.appleAnimIndex.index, .normal);
         self.appleManager.drawUpdate(self.time, self.delta);
 
         // Basket
