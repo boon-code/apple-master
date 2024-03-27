@@ -76,10 +76,10 @@ pub const Player = struct {
             self.position.x = X_MAX;
         }
 
-        if (rl.isKeyPressed(.key_down)) {
-            self.position.y += 1.0;
-        } else if (rl.isKeyPressed(.key_up)) {
-            self.position.y -= 1.0;
+        if (rl.isKeyDown(.key_down)) {
+            self.position.y += 1.0 * speedFactor;
+        } else if (rl.isKeyDown(.key_up)) {
+            self.position.y -= 1.0 * speedFactor;
         }
     }
 
