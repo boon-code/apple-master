@@ -44,7 +44,7 @@ pub const Player = struct {
 
         var velocity: f32 = undefined;
         if (Self.isFastDown()) {
-            velocity = constants.BASKET_SPEED_FAST * speedFactor;
+            velocity = constants.BASKET_SPEED_FAST * self.velocityFactor * speedFactor;
         } else {
             velocity = constants.BASKET_SPEED_NORMAL * self.velocityFactor * speedFactor;
         }
@@ -52,9 +52,11 @@ pub const Player = struct {
         if (rl.isKeyDown(.key_left)) {
             self.direction = -1.0;
             self.calcLeftSnap();
+            self.snapDistance -= velocity;
         } else if (rl.isKeyDown(.key_right)) {
             self.direction = 1.0;
             self.calcRightSnap();
+            self.snapDistance -= velocity;
         } else { // neither left nor right is pressed
             if (self.snapDistance <= 0.0) {
                 self.direction = 0.0;
@@ -70,9 +72,9 @@ pub const Player = struct {
 
         self.position.x += velocity * self.direction;
 
-        if (self.position.x <= 0.0) {
+        if (self.position.x < 0.0) {
             self.position.x = 0.0;
-        } else if (self.position.x >= X_MAX) {
+        } else if (self.position.x > X_MAX) {
             self.position.x = X_MAX;
         }
 
