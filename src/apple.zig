@@ -5,10 +5,11 @@ const sprite = @import("sprite.zig");
 const constants = @import("constants.zig");
 const util = @import("util.zig");
 const Player = @import("player.zig").Player;
+const GameState = @import("game.zig").State;
 
 const AnimatedIndex = sprite.SpriteSheetUniform.Index.Animated;
 
-const Apple = struct {
+pub const Apple = struct {
     active: bool,
     position: rl.Vector2,
     appleAnimIndex: AnimatedIndex,
@@ -66,7 +67,7 @@ pub const AppleManager = struct {
         self.allocator.free(self.apples);
     }
 
-    pub fn drawUpdate(self: *Self, t: f64, delta: f32, player: Player) void {
+    pub fn drawUpdate(self: *Self, t: f64, delta: f32, player: Player, state: *GameState) void {
         var num = self.count;
         if (num <= 0) {
             return;
@@ -82,6 +83,7 @@ pub const AppleManager = struct {
                     i.active = false;
                     self.slotBlocked[i.slot] = false;
                     self.count -= 1;
+                    state.caugthApple(i);
                     std.debug.print("Caught apple: count={d}\n", .{self.count});
                 } else {
                     self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
@@ -90,6 +92,7 @@ pub const AppleManager = struct {
                         i.active = false;
                         self.slotBlocked[i.slot] = false;
                         self.count -= 1;
+                        state.missedApple(i);
                         std.debug.print("Removed apple: count={d}\n", .{self.count});
                     }
                 }

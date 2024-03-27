@@ -109,6 +109,18 @@ pub const State = struct {
         }
     }
 
+    pub fn caugthApple(self: *Self, apple_: *const apple.Apple) void {
+        // TODO: Implement this
+        _ = apple_;
+        _ = self;
+    }
+
+    pub fn missedApple(self: *Self, apple_: *const apple.Apple) void {
+        // TODO: Implement this
+        _ = apple_;
+        _ = self;
+    }
+
     fn showPlus(self: *Self) void {
         if (!self.plusShow) {
             self.plusAnimIndex.reset(self.time + constants.PLUS_WAIT_FIRST);
@@ -122,7 +134,7 @@ pub const State = struct {
         self.drawHealthBar();
 
         // Apple
-        self.appleManager.drawUpdate(self.time, self.delta, self.player);
+        self.appleManager.drawUpdate(self.time, self.delta, self.player, self);
 
         // Basket
         self.player.draw();
