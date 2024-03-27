@@ -10,7 +10,7 @@ pub const SCREEN_Y_APPLES_MAX = 768 - (APPLE_HEIGHT * 2 / 3);
 pub const HEALTH_BAR_X = 870.0;
 
 // apple
-pub const APPLE_PIC = "AE3.png";
+pub const APPLE_PIC = "AE4.png";
 pub const APPLE_HEIGHT = 68;
 pub const APPLE_WIDTH = 65;
 pub const APPLE_OFFSET_X = 4; // on both sides

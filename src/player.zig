@@ -130,6 +130,26 @@ pub const Player = struct {
     pub fn draw(self: Self) void {
         self.drawDebugText();
         rl.drawTextureRec(self.basketTexture, self.rect, self.position, rl.Color.white);
+        self.drawBoundingBox();
+    }
+
+    fn drawBoundingBox(self: Self) void {
+        const appleHeight = constants.APPLE_HEIGHT - 14; // FIXME: find actual pixel value
+        const x1: i32 = @intFromFloat(self.position.x);
+        const y1: i32 = @intFromFloat(self.position.y - appleHeight);
+        const w1: i32 = @intFromFloat(self.rect.width);
+        const h1: i32 = @intFromFloat(constants.APPLE_HEIGHT + 7); // FIXME: check how many pixels this is
+        var color1 = rl.Color.yellow;
+        color1.a = 50;
+        rl.drawRectangle(x1, y1, w1, h1, color1);
+
+        const x2: i32 = @intFromFloat(self.position.x + constants.APPLE_OFFSET_X);
+        const y2: i32 = @intFromFloat(self.position.y - appleHeight);
+        const w2: i32 = @intFromFloat(self.rect.width - constants.APPLE_OFFSET_X * 2);
+        const h2: i32 = @intFromFloat(appleHeight);
+        var color2 = rl.Color.red;
+        color2.a = 128;
+        rl.drawRectangle(x2, y2, w2, h2, color2);
     }
 
     fn drawDebugText(self: Self) void {
