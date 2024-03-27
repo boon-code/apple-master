@@ -77,6 +77,11 @@ pub const State = struct {
     pub fn updateTime(self: *Self) void {
         self.time = rl.getTime();
         self.delta = rl.getFrameTime();
+        self.health -= 0.01 * constants.FPS * self.delta;
+        if (self.health < 0.0) {
+            self.health = 0.0;
+            @panic("Died");
+        }
     }
 
     pub fn updateKeys(self: *Self) void {
@@ -110,15 +115,39 @@ pub const State = struct {
     }
 
     pub fn caugthApple(self: *Self, apple_: *const apple.Apple) void {
-        // TODO: Implement this
-        _ = apple_;
-        _ = self;
+        // FIXME: This is only a draft
+        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+            if (self.score > 5) {
+                self.score -= 5;
+            } else {
+                self.score = 0;
+            }
+            self.health -= 5;
+            if (self.health <= 0.0) {
+                self.health = 0.0;
+                std.debug.print("You lost\n", .{});
+                @panic("Died");
+            }
+        } else {
+            self.score += 5;
+            self.health += 5;
+            if (self.health > 100.0) {
+                self.health = 100.0;
+            }
+        }
     }
 
     pub fn missedApple(self: *Self, apple_: *const apple.Apple) void {
-        // TODO: Implement this
-        _ = apple_;
-        _ = self;
+        // FIXME: This is only a draft
+        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+            self.score += 1;
+        } else {
+            if (self.score > 10) {
+                self.score -= 10;
+            } else {
+                self.score = 0;
+            }
+        }
     }
 
     fn showPlus(self: *Self) void {
