@@ -122,7 +122,7 @@ pub const State = struct {
         self.drawHealthBar();
 
         // Apple
-        self.appleManager.drawUpdate(self.time, self.delta);
+        self.appleManager.drawUpdate(self.time, self.delta, self.player);
 
         // Basket
         self.player.draw();

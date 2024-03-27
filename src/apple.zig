@@ -4,6 +4,7 @@ const rl = @import("raylib");
 const sprite = @import("sprite.zig");
 const constants = @import("constants.zig");
 const util = @import("util.zig");
+const Player = @import("player.zig").Player;
 
 const AnimatedIndex = sprite.SpriteSheetUniform.Index.Animated;
 
@@ -65,7 +66,7 @@ pub const AppleManager = struct {
         self.allocator.free(self.apples);
     }
 
-    pub fn drawUpdate(self: *Self, t: f64, delta: f32) void {
+    pub fn drawUpdate(self: *Self, t: f64, delta: f32, player: Player) void {
         var num = self.count;
         if (num <= 0) {
             return;
@@ -77,14 +78,22 @@ pub const AppleManager = struct {
 
                 _ = i.appleAnimIndex.update(t);
 
-                self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
-
-                if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
+                if (player.catchesApple(i.position)) {
                     i.active = false;
                     self.slotBlocked[i.slot] = false;
                     self.count -= 1;
-                    std.debug.print("Removed apple: count={d}\n", .{self.count});
+                    std.debug.print("Caught apple: count={d}\n", .{self.count});
+                } else {
+                    self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+
+                    if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
+                        i.active = false;
+                        self.slotBlocked[i.slot] = false;
+                        self.count -= 1;
+                        std.debug.print("Removed apple: count={d}\n", .{self.count});
+                    }
                 }
+
                 num -= 1;
                 if (num <= 0) {
                     return;
