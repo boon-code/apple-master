@@ -1,8 +1,7 @@
 pub const TEXTURE_DIR = "resources/textures/";
 
 // target FPS
-//pub const FPS: f32 = 60.0;
-pub const FPS: f32 = 6.0;
+pub const FPS: f32 = 60.0;
 
 // screen layout
 pub const SCREEN_X_AREA = 835;
