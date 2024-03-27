@@ -80,11 +80,14 @@ pub const State = struct {
         self.health -= 0.01 * constants.FPS * self.delta;
         if (self.health < 0.0) {
             self.health = 0.0;
-            @panic("Died");
+            std.debug.print("You ran out of time\n", .{});
         }
     }
 
     pub fn updateKeys(self: *Self) void {
+        if (self.health <= 0.0) {
+            return;
+        }
         if (rl.isKeyDown(.key_m)) {
             self.health -= 1.0 * self.delta * constants.FPS;
             if (self.health < 0.0) {
@@ -105,6 +108,9 @@ pub const State = struct {
     }
 
     pub fn updateMovement(self: *Self) void {
+        if (self.health <= 0.0) {
+            return;
+        }
         _ = self.appleManager.update(self.time);
 
         if (self.plusShow) {
@@ -126,7 +132,6 @@ pub const State = struct {
             if (self.health <= 0.0) {
                 self.health = 0.0;
                 std.debug.print("You lost\n", .{});
-                @panic("Died");
             }
         } else {
             self.score += 5;
@@ -161,6 +166,11 @@ pub const State = struct {
         // Background
         rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
         self.drawHealthBar();
+
+        if (self.health <= 0.0) {
+            rl.drawText("You died", 300, 200, 50, rl.Color.red);
+            return;
+        }
 
         // Apple
         self.appleManager.drawUpdate(self.time, self.delta, self.player, self);
