@@ -34,7 +34,7 @@ pub fn main() anyerror!void {
         if (rl.isKeyPressed(.key_f)) {
             std.debug.print("Key f was pressed\n", .{});
             rl.toggleFullscreen();
-            std.debug.print("Toggled fullscreen mode", .{});
+            std.debug.print("Toggled fullscreen mode\n", .{});
         }
         gameState.updateKeys();
         gameState.updateMovement();
