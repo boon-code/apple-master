@@ -34,6 +34,7 @@ pub const State = struct {
     delta: f32,
     time: f64,
     health: f32,
+    hurt: f32,
     score: u64,
 
     debug: bool,
@@ -78,6 +79,7 @@ pub const State = struct {
             .delta = 0,
             .time = rl.getTime(),
             .health = 100.0,
+            .hurt = 0.0,
             .score = 0,
             .debug = false,
         };
@@ -146,6 +148,7 @@ pub const State = struct {
                 self.score = 0;
             }
             self.health -= 5;
+            self.hurt = 1.0;
             if (self.health <= 0.0) {
                 self.health = 0.0;
                 std.debug.print("You lost\n", .{});
@@ -200,12 +203,28 @@ pub const State = struct {
         // Basket
         self.player.draw(self.debug);
 
+        // hurt effect
+        self.drawHurt();
+
         if (self.plusShow) {
             const pos = rl.Vector2.init(400, 400);
             self.plusSpriteSheet.draw(pos, self.plusAnimIndex.index, .normal);
             var pos2 = pos;
             pos2.x += constants.PLUS_WIDTH + 2.0;
             self.plusSpriteSheet.draw(pos2, self.plusAnimIndex.index, .normal);
+        }
+    }
+
+    fn drawHurt(self: *Self) void {
+        if (self.hurt > 0.0) {
+            var color = rl.Color.red;
+            color.a = @intFromFloat(self.hurt * self.hurt * 230);
+            rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), color);
+            self.hurt -= 0.01 * self.delta * constants.FPS;
+
+            if (self.hurt < 0.0) {
+                self.hurt = 0.0;
+            }
         }
     }
 
