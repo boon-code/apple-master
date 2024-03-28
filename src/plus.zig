@@ -33,7 +33,7 @@ pub const BonusEffect = struct {
         errdefer plusSpriteSheet.unload();
 
         return Self{
-            .plusSpriteSheet = undefined,
+            .plusSpriteSheet = plusSpriteSheet,
             .plus = plus,
             .allocator = allocator,
             .count = 0,
