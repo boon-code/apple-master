@@ -156,6 +156,7 @@ pub const State = struct {
             if (self.health > 100.0) {
                 self.health = 100.0;
             }
+            std.debug.print("Spawn a plus here: {d} {d}\n", .{ apple_.position.x, apple_.position.y });
             self.plusEffect.spawn(apple_.position, self.time);
         }
     }

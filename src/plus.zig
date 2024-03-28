@@ -47,6 +47,7 @@ pub const BonusEffect = struct {
         next.animIndex.reset(time + constants.PLUS_WAIT_FIRST);
         next.active = true;
         self.count += 1;
+        std.debug.print("Spawned a plus effect: count={d}\n", .{self.count});
     }
 
     pub fn drawAndUpdate(self: *Self, time: f64) void {
@@ -56,13 +57,16 @@ pub const BonusEffect = struct {
         }
         for (self.plus) |*plus| {
             if (plus.active) {
+                std.debug.print("draw and update: count={d}\n", .{self.count});
                 const wrapped = plus.animIndex.update(time);
                 if (wrapped) {
+                    std.debug.print("wrapped\n", .{});
                     self.count -= 1;
                     plus.active = false;
                 } else {
                     const pos1 = rl.Vector2.init(plus.position.x + constants.APPLE_OFFSET_X, plus.position.y);
                     const pos2 = rl.Vector2.init(pos1.x + constants.PLUS_WIDTH + 2.0, plus.position.y);
+                    std.debug.print("Plus1: x={d}, y={d}\n", .{ pos1.x, pos1.y });
                     self.plusSpriteSheet.draw(pos1, plus.animIndex.index, .normal);
                     self.plusSpriteSheet.draw(pos2, plus.animIndex.index, .normal);
                 }
