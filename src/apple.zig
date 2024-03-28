@@ -22,6 +22,7 @@ pub const AppleManager = struct {
 
     const MAX_COUNT = 7;
 
+    debugSpriteSheet: sprite.SpriteSheetUniform,
     appleSpriteSheet: sprite.SpriteSheetUniform,
     apples: []Apple,
     allocator: std.mem.Allocator,
@@ -37,6 +38,7 @@ pub const AppleManager = struct {
             i.active = false;
         }
 
+        const debugSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE4.png", 8, 8);
         const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
         var slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
         for (&slotBlocked) |*i| {
@@ -44,6 +46,7 @@ pub const AppleManager = struct {
         }
 
         return Self{
+            .debugSpriteSheet = debugSpriteSheet,
             .appleSpriteSheet = appleSpriteSheet,
             .apples = apples,
             .allocator = allocator,
@@ -90,7 +93,11 @@ pub const AppleManager = struct {
                     state.caugthApple(i);
                     std.debug.print("Caught apple: count={d}\n", .{self.count});
                 } else {
-                    self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+                    if (state.isDebug()) {
+                        self.debugSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+                    } else {
+                        self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+                    }
 
                     if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
                         i.active = false;

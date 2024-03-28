@@ -34,6 +34,8 @@ pub const State = struct {
     health: f32,
     score: u64,
 
+    debug: bool,
+
     // Implementation
 
     pub fn init(allocator: std.mem.Allocator) !Self {
@@ -71,6 +73,7 @@ pub const State = struct {
             .time = rl.getTime(),
             .health = 100.0,
             .score = 0,
+            .debug = false,
         };
     }
 
@@ -104,6 +107,10 @@ pub const State = struct {
             self.showPlus();
         }
 
+        if (rl.isKeyPressed(.key_d)) {
+            self.debug = !self.debug;
+        }
+
         self.player.updateKeys(self.delta);
     }
 
@@ -118,6 +125,10 @@ pub const State = struct {
                 self.plusShow = false;
             }
         }
+    }
+
+    pub fn isDebug(self: Self) bool {
+        return self.debug;
     }
 
     pub fn caugthApple(self: *Self, apple_: *const apple.Apple) void {
@@ -176,7 +187,7 @@ pub const State = struct {
         self.appleManager.drawUpdate(self.time, self.delta, self.player, self);
 
         // Basket
-        self.player.draw();
+        self.player.draw(self.debug);
 
         if (self.plusShow) {
             const pos = rl.Vector2.init(400, 400);

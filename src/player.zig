@@ -133,10 +133,12 @@ pub const Player = struct {
         }
     }
 
-    pub fn draw(self: Self) void {
-        self.drawDebugText();
+    pub fn draw(self: Self, debug: bool) void {
         rl.drawTextureRec(self.basketTexture, self.rect, self.position, rl.Color.white);
-        self.drawBoundingBox();
+        if (debug) {
+            self.drawDebugText();
+            self.drawBoundingBox();
+        }
     }
 
     fn drawBoundingBox(self: Self) void {
