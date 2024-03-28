@@ -5,6 +5,7 @@ const util = @import("util.zig");
 const apple = @import("apple.zig");
 const constants = @import("constants.zig");
 const player = @import("player.zig");
+const plus = @import("plus.zig");
 
 const f32FromInt = util.f32FromInt;
 
@@ -28,6 +29,7 @@ pub const State = struct {
     plusShow: bool,
 
     player: player.Player,
+    plusEffect: plus.BonusEffect,
 
     delta: f32,
     time: f64,
@@ -57,8 +59,11 @@ pub const State = struct {
         var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
         errdefer plusSpriteSheet.unload();
 
-        const p = player.Player.init();
+        var p = player.Player.init();
         errdefer p.unload();
+
+        var plusEffect = try plus.BonusEffect.init(allocator);
+        errdefer plusEffect.unload();
 
         return Self{
             .backgroundTexture = backgroundTexture,
@@ -69,6 +74,7 @@ pub const State = struct {
             .plusAnimIndex = plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED),
             .plusShow = false,
             .player = p,
+            .plusEffect = plusEffect,
             .delta = 0,
             .time = rl.getTime(),
             .health = 100.0,
@@ -144,12 +150,13 @@ pub const State = struct {
                 self.health = 0.0;
                 std.debug.print("You lost\n", .{});
             }
-        } else {
+        } else { // good apple
             self.score += 5;
             self.health += 5;
             if (self.health > 100.0) {
                 self.health = 100.0;
             }
+            self.plusEffect.spawn(apple_.position, self.time);
         }
     }
 
@@ -185,6 +192,9 @@ pub const State = struct {
 
         // Apple
         self.appleManager.drawUpdate(self.time, self.delta, self.player, self);
+
+        // Bonus effect
+        self.plusEffect.drawAndUpdate(self.time);
 
         // Basket
         self.player.draw(self.debug);
