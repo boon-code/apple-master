@@ -52,11 +52,12 @@ pub const BonusEffect = struct {
 
     pub fn drawAndUpdate(self: *Self, time: f64) void {
         var num = self.count;
-        if (num <= 0) {
-            return;
-        }
         for (self.plus) |*plus| {
+            if (num <= 0) {
+                return;
+            }
             if (plus.active) {
+                num -= 1;
                 std.debug.print("draw and update: count={d}\n", .{self.count});
                 const wrapped = plus.animIndex.update(time);
                 if (wrapped) {
@@ -69,11 +70,6 @@ pub const BonusEffect = struct {
                     std.debug.print("Plus1: x={d}, y={d}\n", .{ pos1.x, pos1.y });
                     self.plusSpriteSheet.draw(pos1, plus.animIndex.index, .normal);
                     self.plusSpriteSheet.draw(pos2, plus.animIndex.index, .normal);
-                }
-
-                num -= 1;
-                if (num <= 0) {
-                    return;
                 }
             }
         }

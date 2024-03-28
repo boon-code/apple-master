@@ -76,11 +76,12 @@ pub const AppleManager = struct {
 
     pub fn drawUpdate(self: *Self, t: f64, delta: f32, player: Player, state: *GameState) void {
         var num = self.count;
-        if (num <= 0) {
-            return;
-        }
         for (self.apples) |*i| {
+            if (num <= 0) {
+                return;
+            }
             if (i.active) {
+                num -= 1;
                 i.velocity += constants.GRAVITY * delta * constants.FPS;
                 const inc = i.velocity * delta * constants.FPS;
                 i.position.y += inc;
@@ -107,11 +108,6 @@ pub const AppleManager = struct {
                         state.missedApple(i);
                         std.debug.print("Removed apple: count={d}\n", .{self.count});
                     }
-                }
-
-                num -= 1;
-                if (num <= 0) {
-                    return;
                 }
             }
         }
