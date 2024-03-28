@@ -29,7 +29,7 @@ pub const BonusEffect = struct {
             i.active = false;
         }
 
-        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
+        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
         errdefer plusSpriteSheet.unload();
 
         return Self{
@@ -65,8 +65,10 @@ pub const BonusEffect = struct {
                     self.count -= 1;
                     plus.active = false;
                 } else {
-                    const pos1 = rl.Vector2.init(plus.position.x + constants.APPLE_OFFSET_X, plus.position.y);
-                    const pos2 = rl.Vector2.init(pos1.x + constants.PLUS_WIDTH + 2.0, plus.position.y);
+                    const y = plus.position.y + constants.PLUS_OFFSET_Y;
+                    const pos1 = rl.Vector2.init(plus.position.x + constants.APPLE_OFFSET_X, y);
+                    const x2 = plus.position.x + constants.APPLE_WIDTH - constants.APPLE_OFFSET_X - constants.PLUS_WIDTH;
+                    const pos2 = rl.Vector2.init(x2, y);
                     std.debug.print("Plus1: x={d}, y={d}\n", .{ pos1.x, pos1.y });
                     self.plusSpriteSheet.draw(pos1, plus.animIndex.index, .normal);
                     self.plusSpriteSheet.draw(pos2, plus.animIndex.index, .normal);
