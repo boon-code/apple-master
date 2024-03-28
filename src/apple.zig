@@ -56,8 +56,12 @@ pub const AppleManager = struct {
     pub fn update(self: *Self, t: f64) void {
         if (self.nextSpawn < t) {
             if (self.count < MAX_COUNT) {
-                self.spawnNew();
-                std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
+                if (self.spawnNew()) {
+                    std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
+                } else |_| {
+                    std.debug.print("Delay spawning an apple to next frame: count={d}\n", .{self.count});
+                    return; // delay spawning to next frame
+                }
             }
             self.nextSpawn = t + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
         }
@@ -106,10 +110,10 @@ pub const AppleManager = struct {
         unreachable;
     }
 
-    fn spawnNew(self: *Self) void {
+    fn spawnNew(self: *Self) !void {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
-        const slot = self.nextSlot();
+        const slot = try self.nextSlot();
         const posX: f32 = util.f32FromInt(slot) * constants.APPLE_SLOT_WIDTH + constants.SLOT_OFFSET_X;
         apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
@@ -122,17 +126,10 @@ pub const AppleManager = struct {
         self.count += 1;
     }
 
-    fn nextSlot(self: *Self) usize {
-        const N = constants.APPLE_SLOT_MAX + 1;
+    fn nextSlot(self: *Self) !usize {
         var slot: usize = @intCast(rl.getRandomValue(constants.APPLE_SLOT_MIN, constants.APPLE_SLOT_MAX));
         if (self.slotBlocked[slot]) {
-            for (0..constants.APPLE_SLOT_MAX) |_| {
-                slot = @mod(slot + 1, N);
-                if (!self.slotBlocked[slot]) {
-                    return slot;
-                }
-            }
-            @panic("No slot available");
+            return error.SlotIsBlocked;
         }
         return slot;
     }
