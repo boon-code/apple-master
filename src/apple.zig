@@ -82,11 +82,12 @@ pub const AppleManager = struct {
         for (self.apples) |*i| {
             if (i.active) {
                 i.velocity += constants.GRAVITY * delta * constants.FPS;
-                i.position.y += i.velocity * delta * constants.FPS;
+                const inc = i.velocity * delta * constants.FPS;
+                i.position.y += inc;
 
                 _ = i.appleAnimIndex.update(t);
 
-                if (player.catchesApple(i.position)) {
+                if (player.catchesApple(i.position, inc)) {
                     i.active = false;
                     self.slotBlocked[i.slot] = false;
                     self.count -= 1;

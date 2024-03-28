@@ -160,10 +160,10 @@ pub const Player = struct {
         rl.drawRectangle(x2, y2, w2, h2, color2);
     }
 
-    pub fn catchesApple(self: Self, position: rl.Vector2) bool {
+    pub fn catchesApple(self: Self, position: rl.Vector2, inc: f32) bool {
         const appleHeight = constants.APPLE_HEIGHT - 14; // FIXME: find actual pixel value
         const top = (position.y >= (self.position.y - (appleHeight + 7))); // FIXME: actual pixel offset
-        const bottom = (position.y <= (self.position.y - appleHeight));
+        const bottom = (position.y <= (self.position.y - appleHeight + inc)); // inc: Account for motion
         const left = (position.x >= (self.position.x - constants.APPLE_OFFSET_X));
         const right = (position.x <= (self.position.x + constants.BASKET_WIDTH - constants.APPLE_WIDTH + constants.APPLE_OFFSET_X));
         const isCaught = top and bottom and left and right;
