@@ -31,6 +31,7 @@ pub const State = struct {
     time: f64,
     baseTime: f64,
     paused: bool,
+    showKeyMap: bool,
 
     health: f32,
     hurt: f32,
@@ -78,6 +79,7 @@ pub const State = struct {
             .time = time,
             .baseTime = baseTime,
             .paused = false,
+            .showKeyMap = true,
             .health = 100.0,
             .hurt = 0.0,
             .score = 0,
@@ -119,6 +121,10 @@ pub const State = struct {
 
         if (rl.isKeyPressed(.key_p)) {
             self.togglePause();
+        }
+
+        if (rl.isKeyPressed(.key_k)) {
+            self.showKeyMap = !self.showKeyMap;
         }
 
         if (rl.isKeyPressed(.key_d)) {
@@ -182,6 +188,11 @@ pub const State = struct {
         rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
         self.drawHealthBar();
 
+        // Key map
+        if (self.showKeyMap) {
+            Self.drawKeyInfo();
+        }
+
         if (self.health <= 0.0) {
             rl.drawText("You died", 300, 200, 50, rl.Color.red);
             return;
@@ -202,6 +213,27 @@ pub const State = struct {
         // Paused
         if (self.paused) {
             rl.drawText("-= Game paused =-", 300, 200, 50, rl.Color.light_gray);
+        }
+    }
+
+    fn drawKeyInfo() void {
+        const OFF_X = 520;
+        const OFF_Y = 20;
+        const FONT_SIZE = 20;
+        const SPACE_Y = 25;
+        const COLOR = rl.Color.light_gray.alpha(0.7);
+        const TEXT = [_][:0]const u8{
+            "Key map:",
+            "- left arrow to move left",
+            "- right arrow to move right",
+            "- shift to move faster",
+            "- p to pause",
+            "- k to toggle the key map",
+            "- f to toggle full screen",
+            "- q to quit",
+        };
+        inline for (TEXT, 0..) |text, i| {
+            rl.drawText(text, OFF_X, OFF_Y + SPACE_Y * @as(i32, i), FONT_SIZE, COLOR);
         }
     }
 
