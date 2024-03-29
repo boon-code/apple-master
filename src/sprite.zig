@@ -4,13 +4,16 @@ const f32FromInt = @import("util.zig").f32FromInt;
 // Sprites
 
 pub const SpriteSheetUniform = struct {
+    pub const Index = SpriteIndex2D(Self);
     const Self = @This();
-    const Index = SpriteIndex2D(Self);
 
     texture: rl.Texture2D,
     numSprites: i32, // rows
     numFrames: i32, // cols
     rec: rl.Rectangle,
+
+    frameHeight: f32,
+    frameWidth: f32,
 
     pub fn init(texture: rl.Texture2D, numSprites: i32, numFrames: i32) Self {
         std.debug.assert(numFrames > 0);
@@ -22,6 +25,8 @@ pub const SpriteSheetUniform = struct {
             .numSprites = numSprites,
             .numFrames = numFrames,
             .rec = rl.Rectangle.init(0.0, 0.0, frameWidth, frameHeight),
+            .frameWidth = frameWidth,
+            .frameHeight = frameHeight,
         };
     }
 
@@ -35,6 +40,11 @@ pub const SpriteSheetUniform = struct {
     }
 
     pub fn draw(self: Self, position: rl.Vector2, index: Index, mode: DrawMode) void {
+        const rec = self.getSourceRect(index, mode);
+        rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
+    }
+
+    pub inline fn getSourceRect(self: Self, index: Index, mode: DrawMode) rl.Rectangle {
         var rec = self.rec;
         rec.y = index.spriteIndexF32() * self.rec.height;
         rec.x = index.frameIndexF32() * self.rec.width;
@@ -42,7 +52,7 @@ pub const SpriteSheetUniform = struct {
             .normal => {},
             .flip_vertical => rec.width *= -1.0,
         }
-        rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
+        return rec;
     }
 
     pub fn unload(self: *Self) void {
@@ -52,8 +62,8 @@ pub const SpriteSheetUniform = struct {
 
 pub fn SpriteIndex2D(comptime T: type) type {
     return struct {
+        pub const Animated = AnimatedIndexType(Self);
         const Self = @This();
-        const Animated = AnimatedIndexType(Self);
 
         spriteIndex: i32,
         frameIndex: i32,
@@ -63,8 +73,15 @@ pub fn SpriteIndex2D(comptime T: type) type {
             return Self{ .spriteIndex = spriteIndex, .frameIndex = frameIndex, .spriteSheet = spriteSheet };
         }
 
-        pub fn advanceFrame(self: *Self, byNum: i32) void {
-            self.frameIndex = @mod((self.frameIndex + byNum), self.spriteSheet.numFrames);
+        pub fn advanceFrame(self: *Self, byNum: i32) bool {
+            const newIndex = @mod((self.frameIndex + byNum), self.spriteSheet.numFrames);
+            const wrapped = (newIndex < self.frameIndex);
+            self.frameIndex = newIndex;
+            return wrapped;
+        }
+
+        pub fn setFrameWrap(self: *Self, index: i32) void {
+            self.frameIndex = @mod(index, self.spriteSheet.numFrames);
         }
 
         pub fn setSprite(self: *Self, index: i32) void {
@@ -91,8 +108,8 @@ pub fn SpriteIndex2D(comptime T: type) type {
             return @floatFromInt(self.frameIndex);
         }
 
-        pub fn createAnimated(self: Self, duration: f64) Animated {
-            return Animated.init(self, duration);
+        pub fn createAnimated(self: Self, duration: f64, nextUpdate: f64) Animated {
+            return Animated.init(self, duration, nextUpdate);
         }
     };
 }
@@ -110,15 +127,23 @@ pub fn AnimatedIndexType(comptime IndexType: type) type {
         duration: f64,
         nextUpdate: f64,
 
-        pub fn init(index: IndexType, duration: f64) Self {
-            return Self{ .index = index, .duration = duration, .nextUpdate = rl.getTime() };
+        pub fn init(index: IndexType, duration: f64, nextUpdate: f64) Self {
+            return Self{ .index = index, .duration = duration, .nextUpdate = nextUpdate };
         }
 
-        pub fn update(self: *Self, t: f64) void {
+        pub fn reset(self: *Self, t: f64) void {
+            self.index.setFrameWrap(0);
+            self.nextUpdate = t + self.duration;
+        }
+
+        pub fn update(self: *Self, t: f64) bool {
             if (t >= self.nextUpdate) {
                 const advanceNum = @divFloor((t - self.nextUpdate), self.duration) + 1;
-                self.index.advanceFrame(@intFromFloat(advanceNum));
+                const wrapped = self.index.advanceFrame(@intFromFloat(advanceNum));
                 self.nextUpdate = t + self.duration;
+                return wrapped;
+            } else {
+                return false;
             }
         }
     };
