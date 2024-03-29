@@ -10,6 +10,19 @@ pub fn f32FromInt(v: anytype) f32 {
     return @as(f32, @floatFromInt(v));
 }
 
+pub fn getExtension(path: [:0]const u8) ?[:0]const u8 {
+    var i = path.len;
+    while (i > 0) {
+        i -= 1;
+        switch (path[i]) {
+            '.' => return path[i.. :0],
+            '/' => return null,
+            else => {},
+        }
+    }
+    return null;
+}
+
 pub fn getRandom(comptime T: type, min: T, max: T) T {
     return getRandomInner(T, getRandomI32FullRange(), min, max);
 }

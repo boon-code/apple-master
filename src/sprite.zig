@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
-const f32FromInt = @import("util.zig").f32FromInt;
+const util = @import("util.zig");
+const f32FromInt = util.f32FromInt;
 // Sprites
 
 pub const SpriteSheetUniform = struct {
@@ -147,4 +148,15 @@ pub fn AnimatedIndexType(comptime IndexType: type) type {
             }
         }
     };
+}
+
+pub fn loadTextureEmbed(comptime path: [:0]const u8) rl.Texture2D {
+    const mem = @embedFile(path);
+    const ext = comptime util.getExtension(path);
+    if (ext) |file_fype| {
+        const img = rl.loadImageFromMemory(file_fype, mem);
+        return rl.loadTextureFromImage(img);
+    } else {
+        @compileError("Couldn't determine file type from file extension: " ++ path);
+    }
 }
