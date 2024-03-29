@@ -9,14 +9,14 @@ pub const PlusEffect = struct {
     const Self = @This();
 
     active: bool,
-    animIndex: AnimationIndex,
+    anim_index: AnimationIndex,
     position: rl.Vector2,
 };
 
 pub const BonusEffect = struct {
     const Self = @This();
 
-    plusSpriteSheet: sprite.SpriteSheetUniform,
+    sprite_sheet: sprite.SpriteSheetUniform,
     plus: []PlusEffect,
     allocator: std.mem.Allocator,
 
@@ -29,11 +29,11 @@ pub const BonusEffect = struct {
             i.active = false;
         }
 
-        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
-        errdefer plusSpriteSheet.unload();
+        var sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
+        errdefer sprite_sheet.unload();
 
         return Self{
-            .plusSpriteSheet = plusSpriteSheet,
+            .sprite_sheet = sprite_sheet,
             .plus = plus,
             .allocator = allocator,
             .count = 0,
@@ -43,8 +43,8 @@ pub const BonusEffect = struct {
     pub fn spawn(self: *Self, applePos: rl.Vector2, time: f64) void {
         var next = self.nextUnused();
         next.position = applePos;
-        next.animIndex = self.plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time);
-        next.animIndex.reset(time + constants.PLUS_WAIT_FIRST);
+        next.anim_index = self.sprite_sheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time);
+        next.anim_index.reset(time + constants.PLUS_WAIT_FIRST);
         next.active = true;
         self.count += 1;
         std.debug.print("Spawned a plus effect: count={d}\n", .{self.count});
@@ -58,7 +58,7 @@ pub const BonusEffect = struct {
             }
             if (plus.active) {
                 num -= 1;
-                const wrapped = plus.animIndex.update(time);
+                const wrapped = plus.anim_index.update(time);
                 if (wrapped) {
                     self.count -= 1;
                     plus.active = false;
@@ -67,8 +67,8 @@ pub const BonusEffect = struct {
                     const pos1 = rl.Vector2.init(plus.position.x + constants.APPLE_OFFSET_X, y);
                     const x2 = plus.position.x + constants.APPLE_WIDTH - constants.APPLE_OFFSET_X - constants.PLUS_WIDTH;
                     const pos2 = rl.Vector2.init(x2, y);
-                    self.plusSpriteSheet.draw(pos1, plus.animIndex.index, .normal);
-                    self.plusSpriteSheet.draw(pos2, plus.animIndex.index, .normal);
+                    self.sprite_sheet.draw(pos1, plus.anim_index.index, .normal);
+                    self.sprite_sheet.draw(pos2, plus.anim_index.index, .normal);
                 }
             }
         }
@@ -85,6 +85,6 @@ pub const BonusEffect = struct {
 
     pub fn unload(self: *Self) void {
         self.allocator.free(self.plus);
-        self.plusSpriteSheet.unload();
+        self.sprite_sheet.unload();
     }
 };

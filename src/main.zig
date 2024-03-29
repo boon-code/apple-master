@@ -3,20 +3,18 @@ const std = @import("std");
 const sprite = @import("sprite.zig");
 const game = @import("game.zig");
 
-const APPLE_FRAME_SPEED = 0.075; // seconds
-
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const screenWidth = 1024;
-    const screenHeight = 768;
+    const screen_width = 1024;
+    const screen_height = 768;
 
-    rl.initWindow(screenWidth, screenHeight, "Apple Master Revived");
+    rl.initWindow(screen_width, screen_height, "Apple Master Revived");
     defer rl.closeWindow(); // Close window and OpenGL context
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
-    var gameState = try game.State.init(allocator);
+    var game_state = try game.State.init(allocator);
 
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -29,16 +27,16 @@ pub fn main() anyerror!void {
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // Update
         //----------------------------------------------------------------------------------
-        gameState.updateTime();
+        game_state.updateTime();
 
         if (rl.isKeyPressed(.key_f)) {
             std.debug.print("Key f was pressed\n", .{});
             rl.toggleFullscreen();
             std.debug.print("Toggled fullscreen mode\n", .{});
         }
-        gameState.updateKeys();
-        gameState.updateHealth();
-        gameState.updateMovement();
+        game_state.updateKeys();
+        game_state.updateHealth();
+        game_state.updateMovement();
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -48,7 +46,7 @@ pub fn main() anyerror!void {
 
         rl.clearBackground(rl.Color.white);
 
-        gameState.draw();
+        game_state.draw();
 
         rl.drawFPS(20, 20);
         //----------------------------------------------------------------------------------

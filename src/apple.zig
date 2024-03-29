@@ -12,7 +12,7 @@ const AnimatedIndex = sprite.SpriteSheetUniform.Index.Animated;
 pub const Apple = struct {
     active: bool,
     position: rl.Vector2,
-    appleAnimIndex: AnimatedIndex,
+    anim_index: AnimatedIndex,
     velocity: f32,
     slot: usize,
 };
@@ -22,14 +22,14 @@ pub const AppleManager = struct {
 
     const MAX_COUNT = 7;
 
-    debugSpriteSheet: sprite.SpriteSheetUniform,
-    appleSpriteSheet: sprite.SpriteSheetUniform,
+    debug_sprite_sheet: sprite.SpriteSheetUniform,
+    sprite_sheet: sprite.SpriteSheetUniform,
     apples: []Apple,
     allocator: std.mem.Allocator,
 
     count: i32,
-    nextSpawn: f64,
-    slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool,
+    next_spawn: f64,
+    slot_blocked: [constants.APPLE_SLOT_MAX + 1]bool,
 
     pub fn init(allocator: std.mem.Allocator, time: f64) !Self {
         var apples = try allocator.alloc(Apple, 500);
@@ -38,26 +38,26 @@ pub const AppleManager = struct {
             i.active = false;
         }
 
-        const debugSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "AE4.png", 8, 8);
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
-        var slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
-        for (&slotBlocked) |*i| {
+        const debug_sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "AE4.png", 8, 8);
+        const sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
+        var slot_blocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
+        for (&slot_blocked) |*i| {
             i.* = false;
         }
 
         return Self{
-            .debugSpriteSheet = debugSpriteSheet,
-            .appleSpriteSheet = appleSpriteSheet,
+            .debug_sprite_sheet = debug_sprite_sheet,
+            .sprite_sheet = sprite_sheet,
             .apples = apples,
             .allocator = allocator,
             .count = 0,
-            .nextSpawn = time,
-            .slotBlocked = slotBlocked,
+            .next_spawn = time,
+            .slot_blocked = slot_blocked,
         };
     }
 
     pub fn update(self: *Self, time: f64) void {
-        if (self.nextSpawn < time) {
+        if (self.next_spawn < time) {
             if (self.count < MAX_COUNT) {
                 if (self.spawnNew(time)) {
                     std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
@@ -66,7 +66,7 @@ pub const AppleManager = struct {
                     return; // delay spawning to next frame
                 }
             }
-            self.nextSpawn = time + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
+            self.next_spawn = time + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
         }
     }
 
@@ -86,24 +86,24 @@ pub const AppleManager = struct {
                 const inc = i.velocity * delta * constants.FPS;
                 i.position.y += inc;
 
-                _ = i.appleAnimIndex.update(t);
+                _ = i.anim_index.update(t);
 
                 if (player.catchesApple(i.position, inc)) {
                     i.active = false;
-                    self.slotBlocked[i.slot] = false;
+                    self.slot_blocked[i.slot] = false;
                     self.count -= 1;
                     state.caugthApple(i);
                     std.debug.print("Caught apple: count={d}\n", .{self.count});
                 } else {
                     if (state.isDebug()) {
-                        self.debugSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+                        self.debug_sprite_sheet.draw(i.position, i.anim_index.index, .normal);
                     } else {
-                        self.appleSpriteSheet.draw(i.position, i.appleAnimIndex.index, .normal);
+                        self.sprite_sheet.draw(i.position, i.anim_index.index, .normal);
                     }
 
                     if (i.position.y > constants.SCREEN_Y_APPLES_MAX) {
                         i.active = false;
-                        self.slotBlocked[i.slot] = false;
+                        self.slot_blocked[i.slot] = false;
                         self.count -= 1;
                         state.missedApple(i);
                         std.debug.print("Removed apple: count={d}\n", .{self.count});
@@ -121,18 +121,18 @@ pub const AppleManager = struct {
         const posX: f32 = util.f32FromInt(slot) * constants.APPLE_SLOT_WIDTH + constants.SLOT_OFFSET_X;
         apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
-        apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED, time);
+        apple.anim_index = self.sprite_sheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED, time);
         apple.velocity = util.getRandom(f32, constants.APPLE_START_SPEED_MIN, constants.APPLE_START_SPEED_MAX);
         apple.active = true;
 
-        self.slotBlocked[slot] = true;
+        self.slot_blocked[slot] = true;
 
         self.count += 1;
     }
 
     fn nextSlot(self: *Self) !usize {
         var slot: usize = @intCast(rl.getRandomValue(constants.APPLE_SLOT_MIN, constants.APPLE_SLOT_MAX));
-        if (self.slotBlocked[slot]) {
+        if (self.slot_blocked[slot]) {
             return error.SlotIsBlocked;
         }
         return slot;
