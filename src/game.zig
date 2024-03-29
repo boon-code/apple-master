@@ -198,6 +198,11 @@ pub const State = struct {
 
         // hurt effect
         self.drawHurt();
+
+        // Paused
+        if (self.paused) {
+            rl.drawText("-= Game paused =-", 300, 200, 50, rl.Color.light_gray);
+        }
     }
 
     fn drawHurt(self: *Self) void {
