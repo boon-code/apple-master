@@ -35,16 +35,6 @@ pub const Player = struct {
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        if (rl.isKeyPressed(.key_s)) {
-            if (constants.FPS > 30.0) {
-                constants.FPS = 1.0;
-            } else if (constants.FPS > 0.5) {
-                constants.FPS = 0.01;
-            } else {
-                constants.FPS = 60.0;
-            }
-        }
-
         const speedFactor = delta * constants.FPS;
 
         self.velocityFactor += 0.1 * speedFactor;

@@ -24,10 +24,6 @@ pub const State = struct {
     healthBack: rl.Texture2D,
     healthFront: rl.Texture2D,
 
-    plusSpriteSheet: sprite.SpriteSheetUniform,
-    plusAnimIndex: AnimationIndex,
-    plusShow: bool,
-
     player: player.Player,
     plusEffect: plus.BonusEffect,
 
@@ -76,9 +72,6 @@ pub const State = struct {
             .appleManager = man,
             .healthBack = healthBack,
             .healthFront = healthFront,
-            .plusSpriteSheet = plusSpriteSheet,
-            .plusAnimIndex = plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time),
-            .plusShow = false,
             .player = p,
             .plusEffect = plusEffect,
             .delta = 0,
@@ -123,21 +116,6 @@ pub const State = struct {
         if (self.health <= 0.0) {
             return;
         }
-        if (rl.isKeyDown(.key_m)) {
-            self.health -= 1.0 * self.delta * constants.FPS;
-            if (self.health < 0.0) {
-                self.health = 0.0;
-            }
-        } else if (rl.isKeyDown(.key_p)) {
-            self.health += 1.0 * self.delta * constants.FPS;
-            if (self.health > 100.0) {
-                self.health = 100.0;
-            }
-        }
-
-        if (rl.isKeyDown(.key_w)) {
-            self.showPlus();
-        }
 
         if (rl.isKeyPressed(.key_d)) {
             self.debug = !self.debug;
@@ -151,12 +129,6 @@ pub const State = struct {
             return;
         }
         _ = self.appleManager.update(self.time);
-
-        if (self.plusShow) {
-            if (self.plusAnimIndex.update(self.time)) { // wrapped
-                self.plusShow = false;
-            }
-        }
     }
 
     pub fn isDebug(self: Self) bool {
@@ -201,13 +173,6 @@ pub const State = struct {
         }
     }
 
-    fn showPlus(self: *Self) void {
-        if (!self.plusShow) {
-            self.plusAnimIndex.reset(self.time + constants.PLUS_WAIT_FIRST);
-            self.plusShow = true;
-        }
-    }
-
     pub fn draw(self: *Self) void {
         // Background
         rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
@@ -229,14 +194,6 @@ pub const State = struct {
 
         // hurt effect
         self.drawHurt();
-
-        if (self.plusShow) {
-            const pos = rl.Vector2.init(400, 400);
-            self.plusSpriteSheet.draw(pos, self.plusAnimIndex.index, .normal);
-            var pos2 = pos;
-            pos2.x += constants.PLUS_WIDTH + 2.0;
-            self.plusSpriteSheet.draw(pos2, self.plusAnimIndex.index, .normal);
-        }
     }
 
     fn drawHurt(self: *Self) void {
