@@ -117,6 +117,10 @@ pub const State = struct {
             return;
         }
 
+        if (rl.isKeyPressed(.key_p)) {
+            self.togglePause();
+        }
+
         if (rl.isKeyPressed(.key_d)) {
             self.debug = !self.debug;
         }
