@@ -147,7 +147,7 @@ pub const State = struct {
 
     pub fn caugthApple(self: *Self, apple_: *const apple.Apple) void {
         // FIXME: This is only a draft
-        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+        if (apple_.appleAnimIndex.index.sprite_index >= 4) { // BAD apple
             if (self.score > 5) {
                 self.score -= 5;
             } else {
@@ -172,7 +172,7 @@ pub const State = struct {
 
     pub fn missedApple(self: *Self, apple_: *const apple.Apple) void {
         // FIXME: This is only a draft
-        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+        if (apple_.appleAnimIndex.index.sprite_index >= 4) { // BAD apple
             self.score += 1;
         } else {
             if (self.score > 10) {
