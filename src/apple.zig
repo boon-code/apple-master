@@ -38,8 +38,8 @@ pub const AppleManager = struct {
             i.active = false;
         }
 
-        const debugSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "AE4.png", 8, 8);
-        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
+        const debugSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "AE4.png", 8, 8);
+        const appleSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ constants.APPLE_PIC, 8, 8);
         var slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool = undefined;
         for (&slotBlocked) |*i| {
             i.* = false;

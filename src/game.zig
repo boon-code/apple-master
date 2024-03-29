@@ -44,22 +44,22 @@ pub const State = struct {
     pub fn init(allocator: std.mem.Allocator) !Self {
         const time: f64 = 0.0;
         const baseTime = rl.getTime();
-        const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
+        const backgroundTexture = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "BG.png");
         errdefer rl.unloadTexture(backgroundTexture);
 
         var man = try apple.AppleManager.init(allocator, time);
         errdefer man.unload();
 
         // Health bar
-        const healthBack = rl.loadTexture(constants.TEXTURE_DIR ++ "STR1.png");
+        const healthBack = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "STR1.png");
         errdefer rl.unloadTexture(healthBack);
-        const healthFront = rl.loadTexture(constants.TEXTURE_DIR ++ "STR2.png");
+        const healthFront = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "STR2.png");
         errdefer rl.unloadTexture(healthFront);
         std.debug.assert(healthBack.width == healthFront.width);
         std.debug.assert(healthBack.height == healthFront.height);
 
         // ++ Animation
-        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
+        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
         errdefer plusSpriteSheet.unload();
 
         var p = player.Player.init();

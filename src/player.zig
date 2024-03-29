@@ -18,7 +18,7 @@ pub const Player = struct {
     snapDistance: f32,
 
     pub fn init() Self {
-        const basketTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "KB2.png");
+        const basketTexture = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "KB2.png");
         errdefer rl.unloadTexture(basketTexture);
 
         const rect = rl.Rectangle.init(0, 0, f32FromInt(basketTexture.width), f32FromInt(basketTexture.height));

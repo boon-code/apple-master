@@ -29,7 +29,7 @@ pub const BonusEffect = struct {
             i.active = false;
         }
 
-        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
+        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
         errdefer plusSpriteSheet.unload();
 
         return Self{

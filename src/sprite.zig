@@ -40,6 +40,11 @@ pub const SpriteSheetUniform = struct {
         return Index.init(self, spriteIndex, frameIndex);
     }
 
+    pub fn initFromEmbeddedFile(comptime path: [:0]const u8, numSprites: i32, numFrames: i32) Self {
+        const texture = loadTextureEmbed(path);
+        return Self.init(texture, numSprites, numFrames);
+    }
+
     pub fn draw(self: Self, position: rl.Vector2, index: Index, mode: DrawMode) void {
         const rec = self.getSourceRect(index, mode);
         rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
