@@ -253,6 +253,7 @@ pub const State = struct {
         self.appleSpriteSheet.unload();
         self.healthSpriteSheet.unload();
         self.player.unload();
+        self.plus_effect.unload();
     }
 
     fn drawHealthBar(self: Self) void {
