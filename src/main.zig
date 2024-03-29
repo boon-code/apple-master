@@ -37,6 +37,7 @@ pub fn main() anyerror!void {
             std.debug.print("Toggled fullscreen mode\n", .{});
         }
         gameState.updateKeys();
+        gameState.updateHealth();
         gameState.updateMovement();
         //----------------------------------------------------------------------------------
 

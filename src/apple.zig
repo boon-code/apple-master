@@ -31,7 +31,7 @@ pub const AppleManager = struct {
     nextSpawn: f64,
     slotBlocked: [constants.APPLE_SLOT_MAX + 1]bool,
 
-    pub fn init(allocator: std.mem.Allocator) !Self {
+    pub fn init(allocator: std.mem.Allocator, time: f64) !Self {
         var apples = try allocator.alloc(Apple, 500);
         errdefer allocator.free(apples);
         for (apples) |*i| {
@@ -51,22 +51,22 @@ pub const AppleManager = struct {
             .apples = apples,
             .allocator = allocator,
             .count = 0,
-            .nextSpawn = rl.getTime(),
+            .nextSpawn = time,
             .slotBlocked = slotBlocked,
         };
     }
 
-    pub fn update(self: *Self, t: f64) void {
-        if (self.nextSpawn < t) {
+    pub fn update(self: *Self, time: f64) void {
+        if (self.nextSpawn < time) {
             if (self.count < MAX_COUNT) {
-                if (self.spawnNew()) {
+                if (self.spawnNew(time)) {
                     std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
                 } else |_| {
                     std.debug.print("Delay spawning an apple to next frame: count={d}\n", .{self.count});
                     return; // delay spawning to next frame
                 }
             }
-            self.nextSpawn = t + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
+            self.nextSpawn = time + util.getRandom(f32, constants.APPLE_SPAWN_WAIT_MIN, constants.APPLE_SPAWN_WAIT_MAX);
         }
     }
 
@@ -114,14 +114,14 @@ pub const AppleManager = struct {
         unreachable;
     }
 
-    fn spawnNew(self: *Self) !void {
+    fn spawnNew(self: *Self, time: f64) !void {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
         const slot = try self.nextSlot();
         const posX: f32 = util.f32FromInt(slot) * constants.APPLE_SLOT_WIDTH + constants.SLOT_OFFSET_X;
         apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.APPLE_HEIGHT);
-        apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED);
+        apple.appleAnimIndex = self.appleSpriteSheet.createIndex(spriteIndex, 0).createAnimated(constants.APPLE_ANIMATION_SPEED, time);
         apple.velocity = util.getRandom(f32, constants.APPLE_START_SPEED_MIN, constants.APPLE_START_SPEED_MAX);
         apple.active = true;
 

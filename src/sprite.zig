@@ -108,8 +108,8 @@ pub fn SpriteIndex2D(comptime T: type) type {
             return @floatFromInt(self.frameIndex);
         }
 
-        pub fn createAnimated(self: Self, duration: f64) Animated {
-            return Animated.init(self, duration);
+        pub fn createAnimated(self: Self, duration: f64, nextUpdate: f64) Animated {
+            return Animated.init(self, duration, nextUpdate);
         }
     };
 }
@@ -127,8 +127,8 @@ pub fn AnimatedIndexType(comptime IndexType: type) type {
         duration: f64,
         nextUpdate: f64,
 
-        pub fn init(index: IndexType, duration: f64) Self {
-            return Self{ .index = index, .duration = duration, .nextUpdate = rl.getTime() };
+        pub fn init(index: IndexType, duration: f64, nextUpdate: f64) Self {
+            return Self{ .index = index, .duration = duration, .nextUpdate = nextUpdate };
         }
 
         pub fn reset(self: *Self, t: f64) void {

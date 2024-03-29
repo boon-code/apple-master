@@ -33,6 +33,9 @@ pub const State = struct {
 
     delta: f32,
     time: f64,
+    baseTime: f64,
+    paused: bool,
+
     health: f32,
     hurt: f32,
     score: u64,
@@ -42,10 +45,12 @@ pub const State = struct {
     // Implementation
 
     pub fn init(allocator: std.mem.Allocator) !Self {
+        const time: f64 = 0.0;
+        const baseTime = rl.getTime();
         const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
         errdefer rl.unloadTexture(backgroundTexture);
 
-        var man = try apple.AppleManager.init(allocator);
+        var man = try apple.AppleManager.init(allocator, time);
         errdefer man.unload();
 
         // Health bar
@@ -72,12 +77,14 @@ pub const State = struct {
             .healthBack = healthBack,
             .healthFront = healthFront,
             .plusSpriteSheet = plusSpriteSheet,
-            .plusAnimIndex = plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED),
+            .plusAnimIndex = plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time),
             .plusShow = false,
             .player = p,
             .plusEffect = plusEffect,
             .delta = 0,
-            .time = rl.getTime(),
+            .time = time,
+            .baseTime = baseTime,
+            .paused = false,
             .health = 100.0,
             .hurt = 0.0,
             .score = 0,
@@ -86,13 +93,30 @@ pub const State = struct {
     }
 
     pub fn updateTime(self: *Self) void {
-        self.time = rl.getTime();
-        self.delta = rl.getFrameTime();
+        if (self.paused) {
+            self.delta = 0.0;
+        } else {
+            self.time = rl.getTime() - self.baseTime;
+            self.delta = rl.getFrameTime();
+        }
+    }
+
+    pub fn updateHealth(self: *Self) void {
         self.health -= 0.01 * constants.FPS * self.delta;
         if (self.health < 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
         }
+    }
+
+    fn togglePause(self: *Self) void {
+        if (self.paused) { // unpause
+            self.baseTime = rl.getTime() - self.time;
+        }
+
+        self.paused = !self.paused;
+
+        self.updateTime();
     }
 
     pub fn updateKeys(self: *Self) void {

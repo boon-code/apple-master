@@ -43,7 +43,7 @@ pub const BonusEffect = struct {
     pub fn spawn(self: *Self, applePos: rl.Vector2, time: f64) void {
         var next = self.nextUnused();
         next.position = applePos;
-        next.animIndex = self.plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED);
+        next.animIndex = self.plusSpriteSheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time);
         next.animIndex.reset(time + constants.PLUS_WAIT_FIRST);
         next.active = true;
         self.count += 1;
