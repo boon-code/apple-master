@@ -1,44 +1,44 @@
-pub const TEXTURE_DIR = "resources/textures/";
+pub const texture_dir = "resources/textures/";
 
 // target FPS
-pub const FPS: f32 = 60.0;
+pub const fps: f32 = 60.0;
 
 // screen layout
-pub const SCREEN_X_AREA = 835;
-pub const SCREEN_X_APPLES_MAX = SCREEN_X_AREA - APPLE_WIDTH;
-pub const SCREEN_Y_APPLES_MAX = 768 - (APPLE_HEIGHT * 2 / 3);
-pub const HEALTH_BAR_X = 870.0;
+const screen_x_area = 835;
+const screen_x_apples_max = screen_x_area - apple_width;
+pub const screen_y_apples_max = 768 - (apple_height * 2 / 3);
+pub const health_bar_x = 870.0;
 
 // apple
-pub const APPLE_PIC = "AE3.png";
-pub const APPLE_HEIGHT = 68;
-pub const APPLE_HEIGHT_ACTUAL = APPLE_HEIGHT - APPLE_OFFSET_Y_TOP - APPLE_OFFSET_Y_BOTTOM;
-pub const APPLE_WIDTH = 65;
-pub const APPLE_OFFSET_X = 4; // on both sides
-pub const APPLE_OFFSET_Y_TOP = 14;
-pub const APPLE_OFFSET_Y_BOTTOM = 7;
-pub const APPLE_ANIMATION_SPEED: f32 = 0.1;
+pub const apple_pic = "AE3.png";
+pub const apple_height = 68;
+const apple_height_actual = apple_height - apple_offset_y_top - apple_offset_y_bottom;
+pub const apple_width = 65;
+pub const apple_offset_x = 4; // on both sides
+const apple_offset_y_top = 14;
+const apple_offset_y_bottom = 7;
+pub const apple_animation_speed: f32 = 0.1;
 
-pub const APPLE_START_SPEED_MIN: f32 = 0.1;
-pub const APPLE_START_SPEED_MAX: f32 = 1.0;
-pub const APPLE_SPAWN_WAIT_MIN: f32 = 0.1; // just change the odds
-pub const APPLE_SPAWN_WAIT_MAX: f32 = 1.5;
+pub const apple_start_speed_min: f32 = 0.1;
+pub const apple_start_speed_max: f32 = 1.0;
+pub const apple_spawn_wait_min: f32 = 0.1; // just change the odds
+pub const apple_spawn_wait_max: f32 = 1.5;
 
-pub const GRAVITY: f32 = 1.0 / FPS;
+pub const gravity: f32 = 1.0 / fps;
 
-pub const SLOT_OFFSET_X = 1;
-pub const APPLE_SLOT_WIDTH = APPLE_WIDTH + SLOT_OFFSET_X * 2;
-pub const APPLE_SLOT_MAX = @divFloor(SCREEN_X_APPLES_MAX, APPLE_SLOT_WIDTH);
-pub const APPLE_SLOT_MIN = 0;
+pub const slot_offset_x = 1;
+pub const apple_slot_width = apple_width + slot_offset_x * 2;
+pub const apple_slot_max = @divFloor(screen_x_apples_max, apple_slot_width);
+pub const apple_slot_min = 0;
 
 // plus
-pub const PLUS_WIDTH = 26;
-pub const PLUS_HEIGHT = 26;
-pub const PLUS_ANIM_SPEED = 0.025;
-pub const PLUS_WAIT_FIRST = 0.125;
-pub const PLUS_OFFSET_Y = APPLE_OFFSET_Y_TOP + @divFloor(APPLE_HEIGHT_ACTUAL - PLUS_HEIGHT, 2);
+pub const plus_width = 26;
+const plus_height = 26;
+pub const plus_anim_speed = 0.025;
+pub const plus_wait_first = 0.125;
+pub const plus_offset_y = apple_offset_y_top + @divFloor(apple_height_actual - plus_height, 2);
 
 // basket
-pub const BASKET_WIDTH = 141;
-pub const BASKET_SPEED_NORMAL = 10.0;
-pub const BASKET_SPEED_FAST = 30.0;
+pub const basket_width = 141;
+pub const basket_speed_normal = 10.0;
+pub const basket_speed_fast = 30.0;

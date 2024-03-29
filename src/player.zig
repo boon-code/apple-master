@@ -8,7 +8,7 @@ const f32FromInt = util.f32FromInt;
 
 pub const Player = struct {
     const Self = @This();
-    const X_MAX = (constants.APPLE_SLOT_MAX + 1) * constants.APPLE_SLOT_WIDTH - constants.BASKET_WIDTH;
+    const X_MAX = (constants.apple_slot_max + 1) * constants.apple_slot_width - constants.basket_width;
 
     basket_texture: rl.Texture2D,
     rect: rl.Rectangle,
@@ -18,11 +18,11 @@ pub const Player = struct {
     snap_distance: f32,
 
     pub fn init() Self {
-        const basket_texture = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "KB2.png");
+        const basket_texture = sprite.loadTextureEmbed(constants.texture_dir ++ "KB2.png");
         errdefer rl.unloadTexture(basket_texture);
 
         const rect = rl.Rectangle.init(0, 0, f32FromInt(basket_texture.width), f32FromInt(basket_texture.height));
-        const pos = rl.Vector2.init(100, constants.SCREEN_Y_APPLES_MAX - 10.0);
+        const pos = rl.Vector2.init(100, constants.screen_y_apples_max - 10.0);
 
         return Self{
             .basket_texture = basket_texture,
@@ -35,7 +35,7 @@ pub const Player = struct {
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        const speedFactor = delta * constants.FPS;
+        const speedFactor = delta * constants.fps;
 
         self.velocity_factor += 0.1 * speedFactor;
         if (self.velocity_factor > 1.0) {
@@ -44,9 +44,9 @@ pub const Player = struct {
 
         var velocity: f32 = undefined;
         if (Self.isFastDown()) {
-            velocity = constants.BASKET_SPEED_FAST * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
         } else {
-            velocity = constants.BASKET_SPEED_NORMAL * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_normal * self.velocity_factor * speedFactor;
         }
 
         if (rl.isKeyDown(.key_left)) {
@@ -100,21 +100,21 @@ pub const Player = struct {
     }
 
     fn getLastSnapIndex(x: f32) i32 {
-        return @divFloor(@as(i32, @intFromFloat(x)), constants.APPLE_SLOT_WIDTH);
+        return @divFloor(@as(i32, @intFromFloat(x)), constants.apple_slot_width);
     }
 
     fn getLastSnap(x: f32) f32 {
-        const snapX = Self.getLastSnapIndex(x) * constants.APPLE_SLOT_WIDTH;
+        const snapX = Self.getLastSnapIndex(x) * constants.apple_slot_width;
         return @floatFromInt(snapX);
     }
 
     fn getNextSnap(x: f32) f32 {
-        const next = Self.getLastSnapIndex(x + constants.BASKET_WIDTH) + 1;
-        if (next > constants.APPLE_SLOT_MAX) {
+        const next = Self.getLastSnapIndex(x + constants.basket_width) + 1;
+        if (next > constants.apple_slot_max) {
             return X_MAX;
         }
         var newX: f32 = @floatFromInt(next);
-        newX = newX * constants.APPLE_SLOT_WIDTH - constants.BASKET_WIDTH;
+        newX = newX * constants.apple_slot_width - constants.basket_width;
 
         if (newX > x) {
             return newX;
@@ -132,18 +132,18 @@ pub const Player = struct {
     }
 
     fn drawBoundingBox(self: Self) void {
-        const appleHeight = constants.APPLE_HEIGHT - 14; // FIXME: find actual pixel value
+        const appleHeight = constants.apple_height - 14; // FIXME: find actual pixel value
         const x1: i32 = @intFromFloat(self.position.x);
         const y1: i32 = @intFromFloat(self.position.y - appleHeight);
         const w1: i32 = @intFromFloat(self.rect.width);
-        const h1: i32 = @intFromFloat(constants.APPLE_HEIGHT + 7); // FIXME: check how many pixels this is
+        const h1: i32 = @intFromFloat(constants.apple_height + 7); // FIXME: check how many pixels this is
         var color1 = rl.Color.yellow;
         color1.a = 50;
         rl.drawRectangle(x1, y1, w1, h1, color1);
 
-        const x2: i32 = @intFromFloat(self.position.x + constants.APPLE_OFFSET_X);
+        const x2: i32 = @intFromFloat(self.position.x + constants.apple_offset_x);
         const y2: i32 = @intFromFloat(self.position.y - appleHeight);
-        const w2: i32 = @intFromFloat(self.rect.width - constants.APPLE_OFFSET_X * 2);
+        const w2: i32 = @intFromFloat(self.rect.width - constants.apple_offset_x * 2);
         const h2: i32 = @intFromFloat(appleHeight);
         var color2 = rl.Color.red;
         color2.a = 128;
@@ -151,11 +151,11 @@ pub const Player = struct {
     }
 
     pub fn catchesApple(self: Self, position: rl.Vector2, inc: f32) bool {
-        const appleHeight = constants.APPLE_HEIGHT - 14; // FIXME: find actual pixel value
+        const appleHeight = constants.apple_height - 14; // FIXME: find actual pixel value
         const top = (position.y >= (self.position.y - (appleHeight + 7))); // FIXME: actual pixel offset
         const bottom = (position.y <= (self.position.y - appleHeight + inc)); // inc: Account for motion
-        const left = (position.x >= (self.position.x - constants.APPLE_OFFSET_X));
-        const right = (position.x <= (self.position.x + constants.BASKET_WIDTH - constants.APPLE_WIDTH + constants.APPLE_OFFSET_X));
+        const left = (position.x >= (self.position.x - constants.apple_offset_x));
+        const right = (position.x <= (self.position.x + constants.basket_width - constants.apple_width + constants.apple_offset_x));
         const isCaught = top and bottom and left and right;
         if (isCaught) {
             std.debug.print("catchesApple: apple: {d}, {d}; basket: {d}, {d}\n", .{ position.x, position.y, self.position.x, self.position.y });
@@ -167,11 +167,11 @@ pub const Player = struct {
         var buf: [100]u8 = undefined;
 
         if (std.fmt.bufPrintZ(&buf, "Position: {d}", .{self.position.x})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 20, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Snap: {d}", .{self.snap_distance})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 400, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 400, 20, rl.Color.light_gray);
         } else |_| {}
     }
 

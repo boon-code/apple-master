@@ -44,16 +44,16 @@ pub const State = struct {
     pub fn init(allocator: std.mem.Allocator) !Self {
         const time: f64 = 0.0;
         const base_time = rl.getTime();
-        const background = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "BG.png");
+        const background = sprite.loadTextureEmbed(constants.texture_dir ++ "BG.png");
         errdefer rl.unloadTexture(background);
 
         var man = try apple.AppleManager.init(allocator, time);
         errdefer man.unload();
 
         // Health bar
-        const health_back = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "STR1.png");
+        const health_back = sprite.loadTextureEmbed(constants.texture_dir ++ "STR1.png");
         errdefer rl.unloadTexture(health_back);
-        const health_front = sprite.loadTextureEmbed(constants.TEXTURE_DIR ++ "STR2.png");
+        const health_front = sprite.loadTextureEmbed(constants.texture_dir ++ "STR2.png");
         errdefer rl.unloadTexture(health_front);
         std.debug.assert(health_back.width == health_front.width);
         std.debug.assert(health_back.height == health_front.height);
@@ -93,7 +93,7 @@ pub const State = struct {
     }
 
     pub fn updateHealth(self: *Self) void {
-        self.health -= 0.01 * constants.FPS * self.delta;
+        self.health -= 0.01 * constants.fps * self.delta;
         if (self.health < 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
@@ -238,7 +238,7 @@ pub const State = struct {
             var color = rl.Color.red;
             color.a = @intFromFloat(self.hurt * self.hurt * 230);
             rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), color);
-            self.hurt -= 0.01 * self.delta * constants.FPS;
+            self.hurt -= 0.01 * self.delta * constants.fps;
 
             if (self.hurt < 0.0) {
                 self.hurt = 0.0;
@@ -262,13 +262,13 @@ pub const State = struct {
         const dst_width = frame_width * 2.0;
         const dst_height = frame_height * 2.0;
         // Back
-        const dst_back = rl.Rectangle.init(constants.HEALTH_BAR_X, bar_y, dst_width, dst_height);
+        const dst_back = rl.Rectangle.init(constants.health_bar_x, bar_y, dst_width, dst_height);
         const src_back = rl.Rectangle.init(0, 0, frame_width, frame_height);
         // Front
         const f = (100.0 - self.health) / 100.0;
         var src_dy = frame_height * f;
         var dst_dy = dst_height * f;
-        const dstFront = rl.Rectangle.init(constants.HEALTH_BAR_X, bar_y + dst_dy, dst_width, dst_height - dst_dy);
+        const dstFront = rl.Rectangle.init(constants.health_bar_x, bar_y + dst_dy, dst_width, dst_height - dst_dy);
         const srcFront = rl.Rectangle.init(0, src_dy, frame_width, frame_height - src_dy);
 
         self.drawHealtText();
@@ -282,11 +282,11 @@ pub const State = struct {
 
         const health: i32 = @intFromFloat(self.health);
         if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 70, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 70, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 45, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 45, 20, rl.Color.light_gray);
         } else |_| {}
     }
 };

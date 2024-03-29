@@ -29,7 +29,7 @@ pub const BonusEffect = struct {
             i.active = false;
         }
 
-        var sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.TEXTURE_DIR ++ "PL2.png", 1, 18);
+        var sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.texture_dir ++ "PL2.png", 1, 18);
         errdefer sprite_sheet.unload();
 
         return Self{
@@ -43,8 +43,8 @@ pub const BonusEffect = struct {
     pub fn spawn(self: *Self, applePos: rl.Vector2, time: f64) void {
         var next = self.nextUnused();
         next.position = applePos;
-        next.anim_index = self.sprite_sheet.createIndex(0, 0).createAnimated(constants.PLUS_ANIM_SPEED, time);
-        next.anim_index.reset(time + constants.PLUS_WAIT_FIRST);
+        next.anim_index = self.sprite_sheet.createIndex(0, 0).createAnimated(constants.plus_anim_speed, time);
+        next.anim_index.reset(time + constants.plus_wait_first);
         next.active = true;
         self.count += 1;
         std.debug.print("Spawned a plus effect: count={d}\n", .{self.count});
@@ -63,9 +63,9 @@ pub const BonusEffect = struct {
                     self.count -= 1;
                     plus.active = false;
                 } else {
-                    const y = plus.position.y + constants.PLUS_OFFSET_Y;
-                    const pos1 = rl.Vector2.init(plus.position.x + constants.APPLE_OFFSET_X, y);
-                    const x2 = plus.position.x + constants.APPLE_WIDTH - constants.APPLE_OFFSET_X - constants.PLUS_WIDTH;
+                    const y = plus.position.y + constants.plus_offset_y;
+                    const pos1 = rl.Vector2.init(plus.position.x + constants.apple_offset_x, y);
+                    const x2 = plus.position.x + constants.apple_width - constants.apple_offset_x - constants.plus_width;
                     const pos2 = rl.Vector2.init(x2, y);
                     self.sprite_sheet.draw(pos1, plus.anim_index.index, .normal);
                     self.sprite_sheet.draw(pos2, plus.anim_index.index, .normal);
