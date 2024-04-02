@@ -97,7 +97,7 @@ pub const State = struct {
     }
 
     pub fn updateHealth(self: *Self) void {
-        self.health -= 0.01 * constants.fps * self.delta * self.level.health_decrease_f;
+        self.health -= self.level.health_decrease_f * constants.fps * self.delta;
         if (self.health < 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
@@ -162,6 +162,7 @@ pub const State = struct {
         } else { // good apple
             self.score += 5;
             self.health += 5;
+            self.level.appleCaught();
             if (self.health > 100.0) {
                 self.health = 100.0;
             }
@@ -259,7 +260,7 @@ pub const State = struct {
     }
 
     fn drawHealthBar(self: Self) void {
-        const bar_y = 100.0;
+        const bar_y = 125.0;
         const frame_width = f32FromInt(self.health_back.width);
         const frame_height = f32FromInt(self.health_back.height);
         const origin = rl.Vector2.init(0.0, 0.0);
@@ -284,17 +285,21 @@ pub const State = struct {
     fn drawStatusText(self: Self) void {
         var buf: [100]u8 = undefined;
 
-        const health: i32 = @intFromFloat(self.health);
-        if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
-            rl.drawText(text, constants.health_bar_x, 70, 20, rl.Color.light_gray);
+        if (std.fmt.bufPrintZ(&buf, "Level: {d}", .{self.level.level})) |text| {
+            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
             rl.drawText(text, constants.health_bar_x, 45, 20, rl.Color.light_gray);
         } else |_| {}
 
-        if (std.fmt.bufPrintZ(&buf, "Level: {d}", .{self.level.level})) |text| {
-            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
+        if (std.fmt.bufPrintZ(&buf, "Apples: {d} / {d}", .{ self.level.caught_apples, self.level.needed_apples })) |text| {
+            rl.drawText(text, constants.health_bar_x, 70, 15, rl.Color.light_gray);
+        } else |_| {}
+
+        const health: i32 = @intFromFloat(self.health);
+        if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
+            rl.drawText(text, constants.health_bar_x, 95, 20, rl.Color.light_gray);
         } else |_| {}
     }
 };
