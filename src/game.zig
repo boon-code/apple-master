@@ -6,6 +6,7 @@ const apple = @import("apple.zig");
 const constants = @import("constants.zig");
 const player = @import("player.zig");
 const plus = @import("plus.zig");
+const lvl = @import("level.zig");
 
 const f32FromInt = util.f32FromInt;
 
