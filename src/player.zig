@@ -167,7 +167,7 @@ pub const Player = struct {
         var buf: [100]u8 = undefined;
 
         if (std.fmt.bufPrintZ(&buf, "Position: {d}", .{self.position.x})) |text| {
-            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 375, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Snap: {d}", .{self.snap_distance})) |text| {

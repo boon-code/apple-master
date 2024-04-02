@@ -6,6 +6,7 @@ const constants = @import("constants.zig");
 const util = @import("util.zig");
 const Player = @import("player.zig").Player;
 const GameState = @import("game.zig").State;
+const Level = @import("level.zig").Level;
 
 const AnimatedIndex = sprite.SpriteSheetUniform.Index.Animated;
 
@@ -56,10 +57,10 @@ pub const AppleManager = struct {
         };
     }
 
-    pub fn update(self: *Self, time: f64) void {
+    pub fn update(self: *Self, time: f64, level: Level) void {
         if (self.next_spawn < time) {
-            if (self.count < MAX_COUNT) {
-                if (self.spawnNew(time)) {
+            if (self.count < level.apples_max) {
+                if (self.spawnNew(time, level)) {
                     std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
                 } else |_| {
                     std.debug.print("Delay spawning an apple to next frame: count={d}\n", .{self.count});
@@ -114,7 +115,7 @@ pub const AppleManager = struct {
         unreachable;
     }
 
-    fn spawnNew(self: *Self, time: f64) !void {
+    fn spawnNew(self: *Self, time: f64, level: Level) !void {
         var apple = self.nextUnused();
         const spriteIndex = rl.getRandomValue(0, 7);
         const slot = try self.nextSlot();
@@ -122,7 +123,7 @@ pub const AppleManager = struct {
         apple.slot = slot;
         apple.position = rl.Vector2.init(posX, -constants.apple_height);
         apple.anim_index = self.sprite_sheet.createIndex(spriteIndex, 0).createAnimated(constants.apple_animation_speed, time);
-        apple.velocity = util.getRandom(f32, constants.apple_start_speed_min, constants.apple_start_speed_max);
+        apple.velocity = util.getRandom(f32, constants.apple_start_speed_min, constants.apple_start_speed_max + level.speed_offset);
         apple.active = true;
 
         self.slot_blocked[slot] = true;

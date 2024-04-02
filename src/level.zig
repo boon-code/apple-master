@@ -1,4 +1,4 @@
-const Level = struct {
+pub const Level = struct {
     const Self = @This();
 
     level: i32,

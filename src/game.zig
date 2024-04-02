@@ -6,7 +6,8 @@ const apple = @import("apple.zig");
 const constants = @import("constants.zig");
 const player = @import("player.zig");
 const plus = @import("plus.zig");
-const lvl = @import("level.zig");
+
+const Level = @import("level.zig").Level;
 
 const f32FromInt = util.f32FromInt;
 
@@ -35,6 +36,7 @@ pub const State = struct {
     show_key_map: bool,
 
     health: f32,
+    level: Level,
     hurt: f32,
     score: u64,
 
@@ -78,6 +80,7 @@ pub const State = struct {
             .paused = false,
             .show_key_map = true,
             .health = 100.0,
+            .level = Level.init(),
             .hurt = 0.0,
             .score = 0,
             .debug = false,
@@ -94,7 +97,7 @@ pub const State = struct {
     }
 
     pub fn updateHealth(self: *Self) void {
-        self.health -= 0.01 * constants.fps * self.delta;
+        self.health -= 0.01 * constants.fps * self.delta * self.level.health_decrease_f;
         if (self.health < 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
@@ -135,7 +138,7 @@ pub const State = struct {
         if (self.health <= 0.0) {
             return;
         }
-        _ = self.apple_manager.update(self.time);
+        _ = self.apple_manager.update(self.time, self.level);
     }
 
     pub fn isDebug(self: Self) bool {
@@ -272,13 +275,13 @@ pub const State = struct {
         const dstFront = rl.Rectangle.init(constants.health_bar_x, bar_y + dst_dy, dst_width, dst_height - dst_dy);
         const srcFront = rl.Rectangle.init(0, src_dy, frame_width, frame_height - src_dy);
 
-        self.drawHealtText();
+        self.drawStatusText();
 
         rl.drawTexturePro(self.health_back, src_back, dst_back, origin, 0.0, rl.Color.white);
         rl.drawTexturePro(self.health_front, srcFront, dstFront, origin, 0.0, rl.Color.white);
     }
 
-    fn drawHealtText(self: Self) void {
+    fn drawStatusText(self: Self) void {
         var buf: [100]u8 = undefined;
 
         const health: i32 = @intFromFloat(self.health);
@@ -288,6 +291,10 @@ pub const State = struct {
 
         if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
             rl.drawText(text, constants.health_bar_x, 45, 20, rl.Color.light_gray);
+        } else |_| {}
+
+        if (std.fmt.bufPrintZ(&buf, "Level: {d}", .{self.level.level})) |text| {
+            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
         } else |_| {}
     }
 };
