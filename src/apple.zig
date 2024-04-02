@@ -21,8 +21,6 @@ pub const Apple = struct {
 pub const AppleManager = struct {
     const Self = @This();
 
-    const MAX_COUNT = 7;
-
     debug_sprite_sheet: sprite.SpriteSheetUniform,
     sprite_sheet: sprite.SpriteSheetUniform,
     apples: []Apple,
