@@ -1,11 +1,11 @@
 const level_changes = [_]Change{
-    Change.init(2).setApples(2).setNeeded(3),
-    Change.init(3).setSpeed(5.0).setDecreaseF(2.0),
-    Change.init(4).setApples(1).setNeeded(4),
-    Change.init(5).setApples(1).setNeeded(5),
-    Change.init(6).setSpeed(5.0).setDecreaseF(2.0).setNeeded(-10),
+    Change.init(2).setApples(2).setNeeded(3).setSpawnF(0.8),
+    Change.init(3).setDecreaseF(2.0).setSpawnF(0.8),
+    Change.init(4).setDecreaseF(1.2).setApples(1).setNeeded(4),
+    Change.init(5).setDecreaseF(1.3).setApples(1).setNeeded(5).setSpawnF(0.8),
+    Change.init(6).setDecreaseF(1.2).setNeeded(-10),
     Change.init(7).setApples(1).setNeeded(2),
-    Change.init(8).setApples(1).setNeeded(2),
+    Change.init(8).setSpeed(5.0).setApples(1).setNeeded(2),
     Change.init(9).setApples(1),
     Change.init(10).setApples(1).setNeeded(10),
 };
@@ -17,6 +17,7 @@ pub const Level = struct {
     speed_offset: f32,
     apples_max: i32,
     health_decrease_f: f32,
+    spawn_time_f: f32,
     needed_apples: i64,
     caught_apples: i64,
 
@@ -26,8 +27,9 @@ pub const Level = struct {
             .speed_offset = 0.0,
             .apples_max = 3,
             .health_decrease_f = 0.01,
-            .caught_apples = 0,
+            .spawn_time_f = 1.0,
             .needed_apples = 5,
+            .caught_apples = 0,
         };
     }
 
@@ -43,6 +45,7 @@ pub const Level = struct {
         self.apples_max += change.apples_max;
         self.health_decrease_f *= change.health_decrease_f;
         self.needed_apples += change.needed_apples;
+        self.spawn_time_f *= change.spawn_time_f;
     }
 
     fn next(self: *Self) void {
@@ -61,6 +64,7 @@ const Change = struct {
     speed_offset: f32,
     apples_max: i32,
     health_decrease_f: f32,
+    spawn_time_f: f32,
     level: i32,
     needed_apples: i64,
 
@@ -69,6 +73,7 @@ const Change = struct {
             .speed_offset = 0.0,
             .apples_max = 0,
             .health_decrease_f = 1.0,
+            .spawn_time_f = 1.0,
             .level = level,
             .needed_apples = 0,
         };
@@ -95,6 +100,12 @@ const Change = struct {
     pub fn setNeeded(self: Self, apple_count: i64) Self {
         var x = self;
         x.needed_apples = apple_count;
+        return x;
+    }
+
+    pub fn setSpawnF(self: Self, spawn_time_f: f32) Self {
+        var x = self;
+        x.spawn_time_f = spawn_time_f;
         return x;
     }
 };

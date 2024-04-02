@@ -59,13 +59,13 @@ pub const AppleManager = struct {
         if (self.next_spawn < time) {
             if (self.count < level.apples_max) {
                 if (self.spawnNew(time, level)) {
-                    std.debug.print("Spawn a new apple: count={d}\n", .{self.count});
+                    std.debug.print("Spawn a new apple: count={d}/{d}\n", .{ self.count, level.apples_max });
                 } else |_| {
                     std.debug.print("Delay spawning an apple to next frame: count={d}\n", .{self.count});
                     return; // delay spawning to next frame
                 }
             }
-            self.next_spawn = time + util.getRandom(f32, constants.apple_spawn_wait_min, constants.apple_spawn_wait_max);
+            self.next_spawn = time + util.getRandom(f32, constants.apple_spawn_wait_min, constants.apple_spawn_wait_max) * level.spawn_time_f;
         }
     }
 
