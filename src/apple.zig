@@ -31,7 +31,7 @@ pub const AppleManager = struct {
     slot_blocked: [constants.apple_slot_max + 1]bool,
 
     pub fn init(allocator: std.mem.Allocator, time: f64) !Self {
-        var apples = try allocator.alloc(Apple, 500);
+        var apples = try allocator.alloc(Apple, 30);
         errdefer allocator.free(apples);
         for (apples) |*i| {
             i.active = false;

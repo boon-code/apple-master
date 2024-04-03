@@ -23,7 +23,7 @@ pub const BonusEffect = struct {
     count: i32, // active count
 
     pub fn init(allocator: std.mem.Allocator) !Self {
-        var plus = try allocator.alloc(PlusEffect, 500);
+        var plus = try allocator.alloc(PlusEffect, 30);
         errdefer allocator.free(plus);
         for (plus) |*i| {
             i.active = false;
