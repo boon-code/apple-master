@@ -1,5 +1,6 @@
 const rl = @import("raylib");
 const std = @import("std");
+const builtin = @import("builtin");
 const sprite = @import("sprite.zig");
 const game = @import("game.zig");
 
@@ -12,8 +13,7 @@ pub fn main() anyerror!void {
     rl.initWindow(screen_width, screen_height, "Apple Master Revived");
     defer rl.closeWindow(); // Close window and OpenGL context
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
+    const allocator = initAllocator();
     var game_state = try game.State.init(allocator);
     defer game_state.unload();
 
@@ -51,5 +51,16 @@ pub fn main() anyerror!void {
 
         rl.drawFPS(20, 20);
         //----------------------------------------------------------------------------------
+    }
+}
+
+inline fn initAllocator() std.mem.Allocator {
+    if ((builtin.os.tag == .wasi) or true) {
+        var buffer: [7000]u8 = undefined; // roughly (emperic)
+        var fbo = std.heap.FixedBufferAllocator.init(&buffer);
+        return fbo.allocator();
+    } else {
+        var gpo = std.heap.GeneralPurposeAllocator(.{}){};
+        return gpo.allocator();
     }
 }
