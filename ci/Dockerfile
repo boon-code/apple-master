@@ -31,7 +31,18 @@ RUN cd /opt \
  && ./emsdk install latest \
  && ./emsdk activate latest
 
-RUN echo -e '\nPATH="${PATH}:/opt/zig"\nsource /opt/emsdk/emsdk_env.sh' >> /etc/bash.bashrc
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+ && DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y \
+        libx11-dev \
+        libglvnd-dev \
+        libxcursor-dev \
+        libxrandr-dev \
+        libxinerama-dev \
+        libxi-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN echo '\nPATH="${PATH}:/opt/zig"\nsource /opt/emsdk/emsdk_env.sh' >> /etc/bash.bashrc
 
 # Continue here:
 # - https://emscripten.org/docs/getting_started/downloads.html
