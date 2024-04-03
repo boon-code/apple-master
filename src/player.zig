@@ -58,6 +58,18 @@ pub const Player = struct {
             self.direction = 1.0;
             self.calcRightSnap();
             self.snap_distance -= velocity;
+        } else if (rl.getTouchPointCount() >= 1) {
+            const x = rl.getTouchPosition(0).x;
+            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
+            if (x < (self.position.x + constants.basket_width * 0.5)) {
+                self.direction = -1.0;
+                self.calcLeftSnap();
+                self.snap_distance -= velocity;
+            } else {
+                self.direction = 1.0;
+                self.calcRightSnap();
+                self.snap_distance -= velocity;
+            }
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
                 self.direction = 0.0;
