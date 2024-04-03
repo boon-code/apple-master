@@ -5,12 +5,13 @@ const util = @import("util.zig");
 const constants = @import("constants.zig");
 
 const f32FromInt = util.f32FromInt;
+const SimpleSprite = sprite.SimpleSprite;
 
 pub const Player = struct {
     const Self = @This();
     const X_MAX = (constants.apple_slot_max + 1) * constants.apple_slot_width - constants.basket_width;
 
-    basket_texture: rl.Texture2D,
+    basket: SimpleSprite,
     rect: rl.Rectangle,
     position: rl.Vector2,
     velocity_factor: f32,
@@ -18,14 +19,14 @@ pub const Player = struct {
     snap_distance: f32,
 
     pub fn init() Self {
-        const basket_texture = sprite.loadTextureEmbed(constants.texture_dir ++ "KB2.png");
-        errdefer rl.unloadTexture(basket_texture);
+        const basket = SimpleSprite.initEmbed(constants.texture_dir ++ "KB2.png", constants.basket_width, constants.basket_height);
+        errdefer basket.unload();
 
-        const rect = rl.Rectangle.init(0, 0, f32FromInt(basket_texture.width), f32FromInt(basket_texture.height));
+        const rect = rl.Rectangle.init(0, 0, basket.src_rec.width, basket.src_rec.height);
         const pos = rl.Vector2.init(100, constants.screen_y_apples_max - 10.0);
 
         return Self{
-            .basket_texture = basket_texture,
+            .basket = basket,
             .rect = rect,
             .position = pos,
             .velocity_factor = 0.0,
@@ -124,7 +125,7 @@ pub const Player = struct {
     }
 
     pub fn draw(self: Self, debug: bool) void {
-        rl.drawTextureRec(self.basket_texture, self.rect, self.position, rl.Color.white);
+        self.basket.drawTextureRec(self.rect, self.position, rl.Color.white);
         if (debug) {
             self.drawDebugText();
             self.drawBoundingBox();
@@ -176,7 +177,7 @@ pub const Player = struct {
     }
 
     pub fn unload(self: *Self) void {
-        rl.unloadTexture(self.basket_texture);
+        self.basket.unload();
     }
 
     fn isFastDown() bool {

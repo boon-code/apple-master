@@ -29,7 +29,13 @@ pub const BonusEffect = struct {
             i.active = false;
         }
 
-        var sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(constants.texture_dir ++ "PL2.png", 1, 18);
+        var sprite_sheet = sprite.SpriteSheetUniform.initFromEmbeddedFile(
+            constants.texture_dir ++ "PL2.png",
+            1,
+            constants.plus_anim_count,
+            constants.plus_width * constants.plus_anim_count,
+            constants.plus_height,
+        );
         errdefer sprite_sheet.unload();
 
         return Self{

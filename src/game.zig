@@ -8,6 +8,7 @@ const player = @import("player.zig");
 const plus = @import("plus.zig");
 
 const Level = @import("level.zig").Level;
+const SimpleSprite = sprite.SimpleSprite;
 
 const f32FromInt = util.f32FromInt;
 
@@ -19,12 +20,12 @@ pub const State = struct {
     const AnimationIndex = sprite.SpriteSheetUniform.Index.Animated;
 
     // Sprites
-    background: rl.Texture2D,
+    background: SimpleSprite,
 
     apple_manager: apple.AppleManager,
 
-    health_back: rl.Texture2D,
-    health_front: rl.Texture2D,
+    health_back: SimpleSprite,
+    health_front: SimpleSprite,
 
     player: player.Player,
     plus_effect: plus.BonusEffect,
@@ -47,19 +48,19 @@ pub const State = struct {
     pub fn init(allocator: std.mem.Allocator) !Self {
         const time: f64 = 0.0;
         const base_time = rl.getTime();
-        const background = sprite.loadTextureEmbed(constants.texture_dir ++ "BG.png");
-        errdefer rl.unloadTexture(background);
+        var background = SimpleSprite.initEmbed(constants.texture_dir ++ "BG.png", constants.bg_width, constants.bg_height);
+        errdefer background.unload();
 
         var man = try apple.AppleManager.init(allocator, time);
         errdefer man.unload();
 
         // Health bar
-        const health_back = sprite.loadTextureEmbed(constants.texture_dir ++ "STR1.png");
-        errdefer rl.unloadTexture(health_back);
-        const health_front = sprite.loadTextureEmbed(constants.texture_dir ++ "STR2.png");
-        errdefer rl.unloadTexture(health_front);
-        std.debug.assert(health_back.width == health_front.width);
-        std.debug.assert(health_back.height == health_front.height);
+        var health_back = SimpleSprite.initEmbed(constants.texture_dir ++ "STR1.png", constants.bar_width, constants.bar_height);
+        errdefer health_back.unload();
+        var health_front = SimpleSprite.initEmbed(constants.texture_dir ++ "STR2.png", constants.bar_width, constants.bar_height);
+        errdefer health_front.unload();
+        std.debug.assert(health_back.src_rec.width == health_front.src_rec.width);
+        std.debug.assert(health_back.src_rec.height == health_front.src_rec.height);
 
         var p = player.Player.init();
         errdefer p.unload();
@@ -186,7 +187,7 @@ pub const State = struct {
 
     pub fn draw(self: *Self) void {
         // Background
-        rl.drawTexture(self.background, 0, 0, rl.Color.white);
+        self.background.drawTexture(0, 0, rl.Color.white);
         self.drawHealthBar();
 
         // Key map
@@ -252,9 +253,9 @@ pub const State = struct {
     }
 
     pub fn unload(self: *Self) void {
-        rl.unloadTexture(self.background);
-        rl.unloadTexture(self.health_back);
-        rl.unloadTexture(self.health_front);
+        self.background.unload();
+        self.health_back.unload();
+        self.health_front.unload();
         self.player.unload();
         self.plus_effect.unload();
     }
@@ -278,8 +279,8 @@ pub const State = struct {
 
         self.drawStatusText();
 
-        rl.drawTexturePro(self.health_back, src_back, dst_back, origin, 0.0, rl.Color.white);
-        rl.drawTexturePro(self.health_front, srcFront, dstFront, origin, 0.0, rl.Color.white);
+        self.health_back.drawTexturePro(src_back, dst_back, origin, 0.0, rl.Color.white);
+        self.health_front.drawTexturePro(srcFront, dstFront, origin, 0.0, rl.Color.white);
     }
 
     fn drawStatusText(self: Self) void {

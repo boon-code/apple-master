@@ -4,50 +4,106 @@ const util = @import("util.zig");
 const f32FromInt = util.f32FromInt;
 // Sprites
 
+pub const SimpleSprite = struct {
+    const Self = @This();
+
+    src_rec: rl.Rectangle,
+    texture: rl.Texture2D,
+    width: i32,
+    height: i32,
+
+    pub fn init(path: [:0]const u8, width: i32, height: i32) Self {
+        const texture = rl.loadTexture(path);
+        return Self{
+            .texture = texture,
+            .src_rec = Self.initRect(texture, width, height),
+            .width = width,
+            .height = height,
+        };
+    }
+
+    pub fn initEmbed(comptime path: [:0]const u8, width: i32, height: i32) Self {
+        const texture = loadTextureEmbed(path);
+        return Self{
+            .texture = texture,
+            .src_rec = Self.initRect(texture, width, height),
+            .width = width,
+            .height = height,
+        };
+    }
+
+    inline fn initRect(texture: rl.Texture2D, width: i32, height: i32) rl.Rectangle {
+        const height_max: i32 = @intCast(texture.height);
+        const width_max: i32 = @intCast(texture.width);
+        std.debug.print("{} {} {} {}\n", .{ height_max, height, width_max, width });
+        std.debug.assert(height_max >= height);
+        std.debug.assert(width_max >= width);
+        std.debug.assert(width > 0);
+        std.debug.assert(height > 0);
+
+        const width_f32: f32 = @floatFromInt(width);
+        const height_f32: f32 = @floatFromInt(height);
+
+        return rl.Rectangle.init(0, 0, width_f32, height_f32);
+    }
+
+    pub inline fn drawTextureRec(self: Self, rec: rl.Rectangle, position: rl.Vector2, tint: rl.Color) void {
+        rl.drawTextureRec(self.texture, rec, position, tint);
+    }
+
+    pub inline fn drawTexturePro(self: Self, src: rl.Rectangle, dst: rl.Rectangle, position: rl.Vector2, rotation: f32, tint: rl.Color) void {
+        rl.drawTexturePro(self.texture, src, dst, position, rotation, tint);
+    }
+
+    pub inline fn drawTexture(self: Self, x: f32, y: f32, tint: rl.Color) void {
+        const position = rl.Vector2.init(x, y);
+        rl.drawTextureRec(self.texture, self.src_rec, position, tint);
+    }
+
+    pub inline fn unload(self: *Self) void {
+        rl.unloadTexture(self.texture);
+    }
+};
+
 pub const SpriteSheetUniform = struct {
     pub const Index = SpriteIndex2D(Self);
     const Self = @This();
 
-    texture: rl.Texture2D,
+    sprite: SimpleSprite,
     num_sprites: i32, // rows
     num_frames: i32, // cols
     rec: rl.Rectangle,
 
-    frame_height: f32,
-    frame_width: f32,
-
-    pub fn init(texture: rl.Texture2D, num_sprites: i32, num_frames: i32) Self {
+    pub fn init(sprite: SimpleSprite, num_sprites: i32, num_frames: i32) Self {
         std.debug.assert(num_frames > 0);
         std.debug.assert(num_sprites > 0);
-        const frame_height: f32 = @floatFromInt(@divFloor(texture.height, num_sprites));
-        const frame_width: f32 = @floatFromInt(@divFloor(texture.width, num_frames));
+        const frame_height: f32 = @floatFromInt(@divFloor(sprite.height, num_sprites));
+        const frame_width: f32 = @floatFromInt(@divFloor(sprite.width, num_frames));
         return Self{
-            .texture = texture,
+            .sprite = sprite,
             .num_sprites = num_sprites,
             .num_frames = num_frames,
             .rec = rl.Rectangle.init(0.0, 0.0, frame_width, frame_height),
-            .frame_width = frame_width,
-            .frame_height = frame_height,
         };
     }
 
-    pub fn initFromFile(path: [:0]const u8, num_sprites: i32, num_frames: i32) Self {
-        const texture = rl.loadTexture(path);
-        return Self.init(texture, num_sprites, num_frames);
+    pub fn initFromFile(path: [:0]const u8, num_sprites: i32, num_frames: i32, width: i32, height: i32) Self {
+        const sprite = SimpleSprite.init(path, width, height);
+        return Self.init(sprite, num_sprites, num_frames);
+    }
+
+    pub fn initFromEmbeddedFile(comptime path: [:0]const u8, num_sprites: i32, num_frames: i32, width: i32, height: i32) Self {
+        const sprite = SimpleSprite.initEmbed(path, width, height);
+        return Self.init(sprite, num_sprites, num_frames);
     }
 
     pub fn createIndex(self: Self, sprite_index: i32, frame_index: i32) Index {
         return Index.init(self, sprite_index, frame_index);
     }
 
-    pub fn initFromEmbeddedFile(comptime path: [:0]const u8, num_sprites: i32, num_frames: i32) Self {
-        const texture = loadTextureEmbed(path);
-        return Self.init(texture, num_sprites, num_frames);
-    }
-
     pub fn draw(self: Self, position: rl.Vector2, index: Index, mode: DrawMode) void {
         const rec = self.getSourceRect(index, mode);
-        rl.drawTextureRec(self.texture, rec, position, rl.Color.white); // Draw part of the texture
+        self.sprite.drawTextureRec(rec, position, rl.Color.white); // Draw part of the texture
     }
 
     pub inline fn getSourceRect(self: Self, index: Index, mode: DrawMode) rl.Rectangle {
@@ -62,7 +118,7 @@ pub const SpriteSheetUniform = struct {
     }
 
     pub fn unload(self: *Self) void {
-        rl.unloadTexture(self.texture);
+        self.sprite.unload();
     }
 };
 
