@@ -61,7 +61,7 @@ job_build:
   script:
     - ./ci/build.sh
 
-job_deploy:
+pages:
   stage: deploy
   image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
   rules:
