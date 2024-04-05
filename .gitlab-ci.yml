@@ -1,0 +1,74 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  UPDATE_IMAGE:
+    description: "Specifies, if the container image shall be built"
+    options:
+      - "yes"
+      - "no"
+      - "only"
+    value: "no"
+  FORCE_DEPLOY_IMAGE:
+    description: "If set, the image will be deployed"
+    options:
+      - "yes"
+      - "no"
+    value: "no"
+  DEPLOY:
+    description: "If set, build and deploy"
+    options:
+      - "yes"
+      - "no"
+    value: "no"
+
+stages:
+  - prepare
+  - build
+  - deploy
+
+job_docker_update:
+  stage: prepare
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY/zahnputzmonster/apple-master:latest" ci/
+    - docker run --rm -v "$(pwd):/ws" -w "/ws" "$CI_REGISTRY/zahnputzmonster/apple-master:latest" ./ci/build.sh
+    - if [ "x$CI_COMMIT_BRANCH" = "x$CI_DEFAULT_BRANCH" ] || [ "x$FORCE_DEPLOY_IMAGE" = "xyes" ] ; then echo "deploy"; docker push "$CI_REGISTRY/zahnputzmonster/apple-master:latest"; else echo "skip deploy"; fi
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH) && ($CI_PIPELINE_SOURCE != 'web') && ($CI_PIPELINE_SOURCE != 'merge_request_event')
+      changes:
+        paths:
+          - 'ci/Dockerfile'
+    - if: (($UPDATE_IMAGE == 'yes') || ($UPDATE_IMAGE == 'only')) && ($CI_PIPELINE_SOURCE == 'web')
+      allow_failure: true
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - 'ci/Dockerfile'
+        compare_to: 'refs/heads/main'
+
+job_build:
+  stage: build
+  image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: ($UPDATE_IMAGE != 'only') && (($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH) || ($CI_PIPELINE_SOURCE == 'merge_request_event') || ($CI_PIPELINE_SOURCE == 'web'))
+  before_script:
+    - source /opt/env.sh
+    - zig version  # Print version info for debugging
+  script:
+    - ./ci/build.sh
+
+pages:
+  stage: deploy
+  image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
+  rules:
+    - if: ($DEPLOY == 'yes')
+  script:
+    - ./ci/build-html5.sh
+  artifacts:
+    paths:
+      - public
+  environment: production

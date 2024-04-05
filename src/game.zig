@@ -7,6 +7,9 @@ const constants = @import("constants.zig");
 const player = @import("player.zig");
 const plus = @import("plus.zig");
 
+const Level = @import("level.zig").Level;
+const SimpleSprite = sprite.SimpleSprite;
+
 const f32FromInt = util.f32FromInt;
 
 pub const State = struct {
@@ -17,23 +20,24 @@ pub const State = struct {
     const AnimationIndex = sprite.SpriteSheetUniform.Index.Animated;
 
     // Sprites
-    backgroundTexture: rl.Texture2D,
+    background: SimpleSprite,
 
-    appleManager: apple.AppleManager,
+    apple_manager: apple.AppleManager,
 
-    healthBack: rl.Texture2D,
-    healthFront: rl.Texture2D,
+    health_back: SimpleSprite,
+    health_front: SimpleSprite,
 
     player: player.Player,
-    plusEffect: plus.BonusEffect,
+    plus_effect: plus.BonusEffect,
 
     delta: f32,
     time: f64,
-    baseTime: f64,
+    base_time: f64,
     paused: bool,
-    showKeyMap: bool,
+    show_key_map: bool,
 
     health: f32,
+    level: Level,
     hurt: f32,
     score: u64,
 
@@ -43,44 +47,41 @@ pub const State = struct {
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         const time: f64 = 0.0;
-        const baseTime = rl.getTime();
-        const backgroundTexture = rl.loadTexture(constants.TEXTURE_DIR ++ "BG.png");
-        errdefer rl.unloadTexture(backgroundTexture);
+        const base_time = rl.getTime();
+        var background = SimpleSprite.initEmbed(constants.texture_dir ++ "BG.png", constants.bg_width, constants.bg_height);
+        errdefer background.unload();
 
         var man = try apple.AppleManager.init(allocator, time);
         errdefer man.unload();
 
         // Health bar
-        const healthBack = rl.loadTexture(constants.TEXTURE_DIR ++ "STR1.png");
-        errdefer rl.unloadTexture(healthBack);
-        const healthFront = rl.loadTexture(constants.TEXTURE_DIR ++ "STR2.png");
-        errdefer rl.unloadTexture(healthFront);
-        std.debug.assert(healthBack.width == healthFront.width);
-        std.debug.assert(healthBack.height == healthFront.height);
-
-        // ++ Animation
-        var plusSpriteSheet = sprite.SpriteSheetUniform.initFromFile(constants.TEXTURE_DIR ++ "PL.png", 1, 18);
-        errdefer plusSpriteSheet.unload();
+        var health_back = SimpleSprite.initEmbed(constants.texture_dir ++ "STR1.png", constants.bar_width, constants.bar_height);
+        errdefer health_back.unload();
+        var health_front = SimpleSprite.initEmbed(constants.texture_dir ++ "STR2.png", constants.bar_width, constants.bar_height);
+        errdefer health_front.unload();
+        std.debug.assert(health_back.src_rec.width == health_front.src_rec.width);
+        std.debug.assert(health_back.src_rec.height == health_front.src_rec.height);
 
         var p = player.Player.init();
         errdefer p.unload();
 
-        var plusEffect = try plus.BonusEffect.init(allocator);
-        errdefer plusEffect.unload();
+        var plus_effect = try plus.BonusEffect.init(allocator);
+        errdefer plus_effect.unload();
 
         return Self{
-            .backgroundTexture = backgroundTexture,
-            .appleManager = man,
-            .healthBack = healthBack,
-            .healthFront = healthFront,
+            .background = background,
+            .apple_manager = man,
+            .health_back = health_back,
+            .health_front = health_front,
             .player = p,
-            .plusEffect = plusEffect,
+            .plus_effect = plus_effect,
             .delta = 0,
             .time = time,
-            .baseTime = baseTime,
+            .base_time = base_time,
             .paused = false,
-            .showKeyMap = true,
+            .show_key_map = true,
             .health = 100.0,
+            .level = Level.init(),
             .hurt = 0.0,
             .score = 0,
             .debug = false,
@@ -91,13 +92,13 @@ pub const State = struct {
         if (self.paused) {
             self.delta = 0.0;
         } else {
-            self.time = rl.getTime() - self.baseTime;
+            self.time = rl.getTime() - self.base_time;
             self.delta = rl.getFrameTime();
         }
     }
 
     pub fn updateHealth(self: *Self) void {
-        self.health -= 0.01 * constants.FPS * self.delta;
+        self.health -= self.level.health_decrease_f * constants.fps * self.delta;
         if (self.health < 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
@@ -106,7 +107,7 @@ pub const State = struct {
 
     fn togglePause(self: *Self) void {
         if (self.paused) { // unpause
-            self.baseTime = rl.getTime() - self.time;
+            self.base_time = rl.getTime() - self.time;
         }
 
         self.paused = !self.paused;
@@ -124,7 +125,7 @@ pub const State = struct {
         }
 
         if (rl.isKeyPressed(.key_k)) {
-            self.showKeyMap = !self.showKeyMap;
+            self.show_key_map = !self.show_key_map;
         }
 
         if (rl.isKeyPressed(.key_d)) {
@@ -138,7 +139,7 @@ pub const State = struct {
         if (self.health <= 0.0) {
             return;
         }
-        _ = self.appleManager.update(self.time);
+        _ = self.apple_manager.update(self.time, self.level);
     }
 
     pub fn isDebug(self: Self) bool {
@@ -147,7 +148,7 @@ pub const State = struct {
 
     pub fn caugthApple(self: *Self, apple_: *const apple.Apple) void {
         // FIXME: This is only a draft
-        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+        if (apple_.anim_index.index.sprite_index >= 4) { // BAD apple
             if (self.score > 5) {
                 self.score -= 5;
             } else {
@@ -162,17 +163,18 @@ pub const State = struct {
         } else { // good apple
             self.score += 5;
             self.health += 5;
+            self.level.appleCaught();
             if (self.health > 100.0) {
                 self.health = 100.0;
             }
             std.debug.print("Spawn a plus here: {d} {d}\n", .{ apple_.position.x, apple_.position.y });
-            self.plusEffect.spawn(apple_.position, self.time);
+            self.plus_effect.spawn(apple_.position, self.time);
         }
     }
 
     pub fn missedApple(self: *Self, apple_: *const apple.Apple) void {
         // FIXME: This is only a draft
-        if (apple_.appleAnimIndex.index.spriteIndex >= 4) { // BAD apple
+        if (apple_.anim_index.index.sprite_index >= 4) { // BAD apple
             self.score += 1;
         } else {
             if (self.score > 10) {
@@ -185,11 +187,11 @@ pub const State = struct {
 
     pub fn draw(self: *Self) void {
         // Background
-        rl.drawTexture(self.backgroundTexture, 0, 0, rl.Color.white);
+        self.background.drawTexture(0, 0, rl.Color.white);
         self.drawHealthBar();
 
         // Key map
-        if (self.showKeyMap) {
+        if (self.show_key_map) {
             Self.drawKeyInfo();
         }
 
@@ -199,10 +201,10 @@ pub const State = struct {
         }
 
         // Apple
-        self.appleManager.drawUpdate(self.time, self.delta, self.player, self);
+        self.apple_manager.drawUpdate(self.time, self.delta, self.player, self);
 
         // Bonus effect
-        self.plusEffect.drawAndUpdate(self.time);
+        self.plus_effect.drawAndUpdate(self.time);
 
         // Basket
         self.player.draw(self.debug);
@@ -217,12 +219,12 @@ pub const State = struct {
     }
 
     fn drawKeyInfo() void {
-        const OFF_X = 520;
-        const OFF_Y = 20;
-        const FONT_SIZE = 20;
-        const SPACE_Y = 25;
-        const COLOR = rl.Color.light_gray.alpha(0.7);
-        const TEXT = [_][:0]const u8{
+        const off_x = 520;
+        const off_y = 20;
+        const font_size = 20;
+        const space_y = 25;
+        const text_color = rl.Color.light_gray.alpha(0.7);
+        const key_map = [_][:0]const u8{
             "Key map:",
             "- left arrow to move left",
             "- right arrow to move right",
@@ -232,8 +234,8 @@ pub const State = struct {
             "- f to toggle full screen",
             "- q to quit",
         };
-        inline for (TEXT, 0..) |text, i| {
-            rl.drawText(text, OFF_X, OFF_Y + SPACE_Y * @as(i32, i), FONT_SIZE, COLOR);
+        inline for (key_map, 0..) |text, i| {
+            rl.drawText(text, off_x, off_y + space_y * @as(i32, i), font_size, text_color);
         }
     }
 
@@ -242,7 +244,7 @@ pub const State = struct {
             var color = rl.Color.red;
             color.a = @intFromFloat(self.hurt * self.hurt * 230);
             rl.drawRectangle(0, 0, rl.getScreenWidth(), rl.getScreenHeight(), color);
-            self.hurt -= 0.01 * self.delta * constants.FPS;
+            self.hurt -= 0.01 * self.delta * constants.fps;
 
             if (self.hurt < 0.0) {
                 self.hurt = 0.0;
@@ -251,48 +253,54 @@ pub const State = struct {
     }
 
     pub fn unload(self: *Self) void {
-        rl.unloadTexture(self.backgroundTexture);
-        rl.unloadTexture(self.healthBack);
-        rl.unloadTexture(self.healthFront);
-        self.appleSpriteSheet.unload();
-        self.healthSpriteSheet.unload();
-        self.plusSpriteSheet.unload();
+        self.background.unload();
+        self.health_back.unload();
+        self.health_front.unload();
         self.player.unload();
+        self.plus_effect.unload();
     }
 
     fn drawHealthBar(self: Self) void {
-        const barY = 100.0;
-        const frameWidth = f32FromInt(self.healthBack.width);
-        const frameHeight = f32FromInt(self.healthBack.height);
+        const bar_y = 125.0;
+        const frame_width = f32FromInt(self.health_back.width);
+        const frame_height = f32FromInt(self.health_back.height);
         const origin = rl.Vector2.init(0.0, 0.0);
-        const dstWidth = frameWidth * 2.0;
-        const dstHeight = frameHeight * 2.0;
+        const dst_width = frame_width * 2.0;
+        const dst_height = frame_height * 2.0;
         // Back
-        const dstBack = rl.Rectangle.init(constants.HEALTH_BAR_X, barY, dstWidth, dstHeight);
-        const srcBack = rl.Rectangle.init(0, 0, frameWidth, frameHeight);
+        const dst_back = rl.Rectangle.init(constants.health_bar_x, bar_y, dst_width, dst_height);
+        const src_back = rl.Rectangle.init(0, 0, frame_width, frame_height);
         // Front
         const f = (100.0 - self.health) / 100.0;
-        var srcDy = frameHeight * f;
-        var dstDy = dstHeight * f;
-        const dstFront = rl.Rectangle.init(constants.HEALTH_BAR_X, barY + dstDy, dstWidth, dstHeight - dstDy);
-        const srcFront = rl.Rectangle.init(0, srcDy, frameWidth, frameHeight - srcDy);
+        var src_dy = frame_height * f;
+        var dst_dy = dst_height * f;
+        const dstFront = rl.Rectangle.init(constants.health_bar_x, bar_y + dst_dy, dst_width, dst_height - dst_dy);
+        const srcFront = rl.Rectangle.init(0, src_dy, frame_width, frame_height - src_dy);
 
-        self.drawHealtText();
+        self.drawStatusText();
 
-        rl.drawTexturePro(self.healthBack, srcBack, dstBack, origin, 0.0, rl.Color.white);
-        rl.drawTexturePro(self.healthFront, srcFront, dstFront, origin, 0.0, rl.Color.white);
+        self.health_back.drawTexturePro(src_back, dst_back, origin, 0.0, rl.Color.white);
+        self.health_front.drawTexturePro(srcFront, dstFront, origin, 0.0, rl.Color.white);
     }
 
-    fn drawHealtText(self: Self) void {
+    fn drawStatusText(self: Self) void {
         var buf: [100]u8 = undefined;
 
-        const health: i32 = @intFromFloat(self.health);
-        if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 70, 20, rl.Color.light_gray);
+        if (std.fmt.bufPrintZ(&buf, "Level: {d}", .{self.level.level})) |text| {
+            rl.drawText(text, constants.health_bar_x, 20, 20, rl.Color.light_gray);
         } else |_| {}
 
         if (std.fmt.bufPrintZ(&buf, "Score: {d}", .{self.score})) |text| {
-            rl.drawText(text, constants.HEALTH_BAR_X, 45, 20, rl.Color.light_gray);
+            rl.drawText(text, constants.health_bar_x, 45, 20, rl.Color.light_gray);
+        } else |_| {}
+
+        if (std.fmt.bufPrintZ(&buf, "Apples: {d} / {d}", .{ self.level.caught_apples, self.level.needed_apples })) |text| {
+            rl.drawText(text, constants.health_bar_x, 70, 15, rl.Color.light_gray);
+        } else |_| {}
+
+        const health: i32 = @intFromFloat(self.health);
+        if (std.fmt.bufPrintZ(&buf, "Health: {d}", .{health})) |text| {
+            rl.drawText(text, constants.health_bar_x, 95, 20, rl.Color.light_gray);
         } else |_| {}
     }
 };
