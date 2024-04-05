@@ -65,7 +65,7 @@ job_deploy:
   stage: deploy
   image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
   rules:
-    - if: ($DEPLOY != 'yes')
+    - if: ($DEPLOY == 'yes')
   script:
     - ./ci/build-html5.sh
   artifacts:
