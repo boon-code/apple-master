@@ -67,5 +67,8 @@ job_deploy:
   rules:
     - if: ($DEPLOY != 'yes')
   script:
-    - ./ci/build-win.sh
     - ./ci/build-html5.sh
+  artifacts:
+    paths:
+      - public
+  environment: production
