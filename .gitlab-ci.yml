@@ -13,11 +13,17 @@ variables:
       - "yes"
       - "no"
     value: "no"
+  DEPLOY:
+    description: "If set, build and deploy"
+    options:
+      - "yes"
+      - "no"
+    value: "no"
 
 stages:
   - prepare
   - build
-  - pages
+  - deploy
 
 job_docker_update:
   stage: prepare
@@ -54,3 +60,12 @@ job_build:
     - zig version  # Print version info for debugging
   script:
     - ./ci/build.sh
+
+job_deploy:
+  stage: deploy
+  image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
+  rules:
+    - if: ($DEPLOY != 'yes')
+  script:
+    - ./ci/build-win.sh
+    - ./ci/build-html5.sh
