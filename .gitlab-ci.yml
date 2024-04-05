@@ -44,6 +44,7 @@ job_build:
       when: never
     - if: ($UPDATE_IMAGE != 'only') && (($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH) || ($CI_PIPELINE_SOURCE == 'merge_request_event') || ($CI_PIPELINE_SOURCE == 'web'))
   before_script:
+    - source /opt/env.sh
     - zig version  # Print version info for debugging
   script:
     - ./ci/build.sh
