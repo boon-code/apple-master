@@ -7,6 +7,12 @@ variables:
       - "no"
       - "only"
     value: "no"
+  FORCE_DEPLOY_IMAGE:
+    description: "If set, the image will be deployed"
+    options:
+      - "yes"
+      - "no"
+    value: "no"
 
 stages:
   - prepare
@@ -22,7 +28,7 @@ job_docker_update:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker build -t "$CI_REGISTRY/zahnputzmonster/apple-master:latest" ci/
     - docker run --rm -v "$(pwd):/ws" -w "/ws" "$CI_REGISTRY/zahnputzmonster/apple-master:latest" ./ci/build.sh
-    - if [ "x$CI_COMMIT_BRANCH" = "x$CI_DEFAULT_BRANCH" ]; then echo "deploy"; docker push "$CI_REGISTRY/zahnputzmonster/apple-master:latest"; else echo "skip deploy"; fi
+    - if [ "x$CI_COMMIT_BRANCH" = "x$CI_DEFAULT_BRANCH" ] || [ "x$FORCE_DEPLOY_IMAGE" = "xyes" ] ; then echo "deploy"; docker push "$CI_REGISTRY/zahnputzmonster/apple-master:latest"; else echo "skip deploy"; fi
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH) && ($CI_PIPELINE_SOURCE != 'web') && ($CI_PIPELINE_SOURCE != 'merge_request_event')
       changes:
