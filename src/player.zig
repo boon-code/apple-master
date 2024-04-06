@@ -59,17 +59,8 @@ pub const Player = struct {
             self.calcRightSnap();
             self.snap_distance -= velocity;
         } else if (rl.getTouchPointCount() >= 1) {
-            const x = rl.getTouchPosition(0).x;
             velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
-            if (x < (self.position.x + constants.basket_width * 0.5)) {
-                self.direction = -1.0;
-                self.calcLeftSnap();
-                self.snap_distance -= velocity;
-            } else {
-                self.direction = 1.0;
-                self.calcRightSnap();
-                self.snap_distance -= velocity;
-            }
+            self.handleTouch(rl.getTouchPosition(0), velocity);
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
                 self.direction = 0.0;
@@ -99,6 +90,19 @@ pub const Player = struct {
             self.position.y += 1.0 * speedFactor;
         } else if (rl.isKeyDown(.key_up)) {
             self.position.y -= 1.0 * speedFactor;
+        }
+    }
+
+    fn handleTouch(self: *Self, touch_pos: rl.Vector2, velocity: f32) void {
+        const x = touch_pos.x;
+        if (x < (self.position.x + constants.basket_width * 0.5)) {
+            self.direction = -1.0;
+            self.calcLeftSnap();
+            self.snap_distance -= velocity;
+        } else {
+            self.direction = 1.0;
+            self.calcRightSnap();
+            self.snap_distance -= velocity;
         }
     }
 
