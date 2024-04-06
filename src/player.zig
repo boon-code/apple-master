@@ -144,7 +144,7 @@ pub const Player = struct {
 
     fn getNextSnap(x: f32) f32 {
         const next = Self.getLastSnapIndex(x) + 1;
-        if (next > constants.apple_slot_max - constants.basket_width) {
+        if (next > constants.apple_slot_max) {
             return X_MAX;
         }
         var newX: f32 = @floatFromInt(next);
