@@ -124,12 +124,12 @@ pub const Player = struct {
 
     fn calcLeftSnap(self: *Self, x: f32) void {
         const last = Self.getLastSnap(x);
-        self.snap_distance = x - last;
+        self.snap_distance = self.position.x - last;
     }
 
     fn calcRightSnap(self: *Self, x: f32) void {
         const next = Self.getNextSnap(x);
-        self.snap_distance = next - x;
+        self.snap_distance = next - self.position.x;
     }
 
     fn getLastSnapIndex(x: f32) i32 {
