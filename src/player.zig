@@ -17,6 +17,7 @@ pub const Player = struct {
     velocity_factor: f32,
     direction: f32,
     snap_distance: f32,
+    touch_motion: bool,
 
     pub fn init() Self {
         const basket = SimpleSprite.initEmbed(constants.texture_dir ++ "KB2.png", constants.basket_width, constants.basket_height);
@@ -32,6 +33,7 @@ pub const Player = struct {
             .velocity_factor = 0.0,
             .direction = 0.0,
             .snap_distance = 0.0,
+            .touch_motion = false,
         };
     }
 
@@ -50,18 +52,25 @@ pub const Player = struct {
             self.direction = -1.0;
             self.calcLeftSnap(self.position.x);
             self.snap_distance -= velocity;
+            self.touch_motion = false;
         } else if (rl.isKeyDown(.key_right)) {
             self.direction = 1.0;
             self.calcRightSnap(self.position.x);
             self.snap_distance -= velocity;
+            self.touch_motion = false;
         } else if (rl.getTouchPointCount() >= 1) {
             velocity = constants.basket_speed_fast * speed_factor;
             self.handleTouch(rl.getTouchPosition(0), &velocity);
+            self.touch_motion = true;
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
                 self.direction = 0.0;
                 self.velocity_factor = 0.0;
+                self.touch_motion = false; // reset touch motion
             } else {
+                if (self.touch_motion) {
+                    velocity = constants.basket_speed_fast * speed_factor;
+                }
                 self.snap_distance -= velocity;
                 if (self.snap_distance <= 0.0) {
                     velocity += self.snap_distance; // reduce the velocity
