@@ -52,15 +52,15 @@ pub const Player = struct {
 
         if (rl.isKeyDown(.key_left)) {
             self.direction = -1.0;
-            self.calcLeftSnap();
+            self.calcLeftSnap(self.position.x);
             self.snap_distance -= velocity;
         } else if (rl.isKeyDown(.key_right)) {
             self.direction = 1.0;
-            self.calcRightSnap();
+            self.calcRightSnap(self.position.x);
             self.snap_distance -= velocity;
         } else if (rl.getTouchPointCount() >= 1) {
             velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
-            self.handleTouch(rl.getTouchPosition(0), velocity);
+            self.handleTouch(rl.getTouchPosition(0), &velocity);
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
                 self.direction = 0.0;
@@ -93,27 +93,40 @@ pub const Player = struct {
         }
     }
 
-    fn handleTouch(self: *Self, touch_pos: rl.Vector2, velocity: f32) void {
+    fn handleTouch(self: *Self, touch_pos: rl.Vector2, velocity: *f32) void {
         const x = touch_pos.x;
-        if (x < (self.position.x + constants.basket_width * 0.5)) {
+        if (x < self.position.x) {
+            // left
             self.direction = -1.0;
-            self.calcLeftSnap();
-            self.snap_distance -= velocity;
-        } else {
+            self.calcLeftSnap(x);
+            self.snap_distance -= velocity.*;
+        } else if (x > (self.position.x + constants.basket_width)) {
+            // right
             self.direction = 1.0;
-            self.calcRightSnap();
-            self.snap_distance -= velocity;
+            self.calcRightSnap(x);
+            self.snap_distance -= velocity.*;
+        } else { // snap movement
+            if (self.snap_distance <= 0.0) {
+                self.direction = 0.0;
+                self.velocity_factor = 0.0;
+            } else {
+                self.snap_distance -= velocity.*;
+                if (self.snap_distance <= 0.0) {
+                    velocity.* += self.snap_distance; // reduce the velocity
+                    self.snap_distance = 0.0;
+                }
+            }
         }
     }
 
-    fn calcLeftSnap(self: *Self) void {
-        const last = Self.getLastSnap(self.position.x);
-        self.snap_distance = self.position.x - last;
+    fn calcLeftSnap(self: *Self, x: f32) void {
+        const last = Self.getLastSnap(x);
+        self.snap_distance = x - last;
     }
 
-    fn calcRightSnap(self: *Self) void {
-        const next = Self.getNextSnap(self.position.x);
-        self.snap_distance = next - self.position.x;
+    fn calcRightSnap(self: *Self, x: f32) void {
+        const next = Self.getNextSnap(x);
+        self.snap_distance = next - x;
     }
 
     fn getLastSnapIndex(x: f32) i32 {
