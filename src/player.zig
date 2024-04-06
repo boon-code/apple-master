@@ -36,18 +36,14 @@ pub const Player = struct {
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        const speedFactor = delta * constants.fps;
-
-        self.velocity_factor += 0.1 * speedFactor;
-        if (self.velocity_factor > 1.0) {
-            self.velocity_factor = 1.0;
-        }
+        const speed_factor = delta * constants.fps;
+        self.applySlowStart(speed_factor);
 
         var velocity: f32 = undefined;
         if (Self.isFastDown()) {
-            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_fast * self.velocity_factor * speed_factor;
         } else {
-            velocity = constants.basket_speed_normal * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_normal * self.velocity_factor * speed_factor;
         }
 
         if (rl.isKeyDown(.key_left)) {
@@ -59,7 +55,7 @@ pub const Player = struct {
             self.calcRightSnap(self.position.x);
             self.snap_distance -= velocity;
         } else if (rl.getTouchPointCount() >= 1) {
-            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_fast * speed_factor;
             self.handleTouch(rl.getTouchPosition(0), &velocity);
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
@@ -87,9 +83,16 @@ pub const Player = struct {
         }
 
         if (rl.isKeyDown(.key_down)) {
-            self.position.y += 1.0 * speedFactor;
+            self.position.y += 1.0 * speed_factor;
         } else if (rl.isKeyDown(.key_up)) {
-            self.position.y -= 1.0 * speedFactor;
+            self.position.y -= 1.0 * speed_factor;
+        }
+    }
+
+    fn applySlowStart(self: *Self, speed_factor: f32) void {
+        self.velocity_factor += 0.1 * speed_factor;
+        if (self.velocity_factor > 1.0) {
+            self.velocity_factor = 1.0;
         }
     }
 
