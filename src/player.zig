@@ -133,6 +133,9 @@ pub const Player = struct {
     }
 
     fn getLastSnapIndex(x: f32) i32 {
+        if (x < 0) {
+            return 0;
+        }
         return @divFloor(@as(i32, @intFromFloat(x)), constants.apple_slot_width);
     }
 
