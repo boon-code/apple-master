@@ -4,4 +4,6 @@
 
 zig build -Doptimize=ReleaseSmall -Dtarget=wasm32-emscripten --sysroot /opt/emsdk/upstream/emscripten \
  && mkdir -p public \
- && cp zig-out/htmlout/* public/
+ && cp -v zig-out/htmlout/* public/ \
+ && mv public/index.html public/full.html \
+ && cp -v html/* public/

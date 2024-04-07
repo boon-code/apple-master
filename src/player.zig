@@ -17,6 +17,7 @@ pub const Player = struct {
     velocity_factor: f32,
     direction: f32,
     snap_distance: f32,
+    touch_motion: bool,
 
     pub fn init() Self {
         const basket = SimpleSprite.initEmbed(constants.texture_dir ++ "KB2.png", constants.basket_width, constants.basket_height);
@@ -32,49 +33,44 @@ pub const Player = struct {
             .velocity_factor = 0.0,
             .direction = 0.0,
             .snap_distance = 0.0,
+            .touch_motion = false,
         };
     }
 
     pub fn updateKeys(self: *Self, delta: f32) void {
-        const speedFactor = delta * constants.fps;
-
-        self.velocity_factor += 0.1 * speedFactor;
-        if (self.velocity_factor > 1.0) {
-            self.velocity_factor = 1.0;
-        }
+        const speed_factor = delta * constants.fps;
+        self.applySlowStart(speed_factor);
 
         var velocity: f32 = undefined;
         if (Self.isFastDown()) {
-            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_fast * self.velocity_factor * speed_factor;
         } else {
-            velocity = constants.basket_speed_normal * self.velocity_factor * speedFactor;
+            velocity = constants.basket_speed_normal * self.velocity_factor * speed_factor;
         }
 
         if (rl.isKeyDown(.key_left)) {
             self.direction = -1.0;
-            self.calcLeftSnap();
+            self.calcLeftSnap(self.position.x);
             self.snap_distance -= velocity;
+            self.touch_motion = false;
         } else if (rl.isKeyDown(.key_right)) {
             self.direction = 1.0;
-            self.calcRightSnap();
+            self.calcRightSnap(self.position.x);
             self.snap_distance -= velocity;
+            self.touch_motion = false;
         } else if (rl.getTouchPointCount() >= 1) {
-            const x = rl.getTouchPosition(0).x;
-            velocity = constants.basket_speed_fast * self.velocity_factor * speedFactor;
-            if (x < (self.position.x + constants.basket_width * 0.5)) {
-                self.direction = -1.0;
-                self.calcLeftSnap();
-                self.snap_distance -= velocity;
-            } else {
-                self.direction = 1.0;
-                self.calcRightSnap();
-                self.snap_distance -= velocity;
-            }
+            velocity = constants.basket_speed_fast * speed_factor;
+            self.handleTouch(rl.getTouchPosition(0), &velocity);
+            self.touch_motion = true;
         } else { // neither left nor right is pressed
             if (self.snap_distance <= 0.0) {
                 self.direction = 0.0;
                 self.velocity_factor = 0.0;
+                self.touch_motion = false; // reset touch motion
             } else {
+                if (self.touch_motion) {
+                    velocity = constants.basket_speed_fast * speed_factor;
+                }
                 self.snap_distance -= velocity;
                 if (self.snap_distance <= 0.0) {
                     velocity += self.snap_distance; // reduce the velocity
@@ -96,23 +92,57 @@ pub const Player = struct {
         }
 
         if (rl.isKeyDown(.key_down)) {
-            self.position.y += 1.0 * speedFactor;
+            self.position.y += 1.0 * speed_factor;
         } else if (rl.isKeyDown(.key_up)) {
-            self.position.y -= 1.0 * speedFactor;
+            self.position.y -= 1.0 * speed_factor;
         }
     }
 
-    fn calcLeftSnap(self: *Self) void {
-        const last = Self.getLastSnap(self.position.x);
+    fn applySlowStart(self: *Self, speed_factor: f32) void {
+        self.velocity_factor += 0.1 * speed_factor;
+        if (self.velocity_factor > 1.0) {
+            self.velocity_factor = 1.0;
+        }
+    }
+
+    fn handleTouch(self: *Self, touch_pos: rl.Vector2, velocity: *f32) void {
+        const x = touch_pos.x;
+        if (x < self.position.x) { // left
+            self.direction = -1.0;
+            self.calcLeftSnap(x);
+            self.snap_distance -= velocity.*;
+        } else if (x > (self.position.x + constants.basket_width)) { // right
+            self.direction = 1.0;
+            self.calcRightSnap(x - constants.basket_width);
+            self.snap_distance -= velocity.*;
+        } else { // snap movement
+            if (self.snap_distance <= 0.0) {
+                self.direction = 0.0;
+                self.velocity_factor = 0.0;
+            } else {
+                self.snap_distance -= velocity.*;
+                if (self.snap_distance <= 0.0) {
+                    velocity.* += self.snap_distance; // reduce the velocity
+                    self.snap_distance = 0.0;
+                }
+            }
+        }
+    }
+
+    fn calcLeftSnap(self: *Self, x: f32) void {
+        const last = Self.getLastSnap(x);
         self.snap_distance = self.position.x - last;
     }
 
-    fn calcRightSnap(self: *Self) void {
-        const next = Self.getNextSnap(self.position.x);
+    fn calcRightSnap(self: *Self, x: f32) void {
+        const next = Self.getNextSnap(x);
         self.snap_distance = next - self.position.x;
     }
 
     fn getLastSnapIndex(x: f32) i32 {
+        if (x < 0) {
+            return 0;
+        }
         return @divFloor(@as(i32, @intFromFloat(x)), constants.apple_slot_width);
     }
 
@@ -122,12 +152,12 @@ pub const Player = struct {
     }
 
     fn getNextSnap(x: f32) f32 {
-        const next = Self.getLastSnapIndex(x + constants.basket_width) + 1;
+        const next = Self.getLastSnapIndex(x) + 1;
         if (next > constants.apple_slot_max) {
             return X_MAX;
         }
         var newX: f32 = @floatFromInt(next);
-        newX = newX * constants.apple_slot_width - constants.basket_width;
+        newX = newX * constants.apple_slot_width;
 
         if (newX > x) {
             return newX;
