@@ -189,8 +189,12 @@ pub const State = struct {
     }
 
     pub fn draw(self: *Self) void {
+        const text_offset_y = 250;
         // Background
         self.background.drawTexture(0, 0, rl.Color.white);
+
+        rl.drawText("Apple Master", 60, text_offset_y, 100, rl.Color.light_gray);
+        rl.drawText("Revived", 240, text_offset_y + 120, 100, rl.Color.light_gray);
         self.drawHealthBar();
 
         // Key map
