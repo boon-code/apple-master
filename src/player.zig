@@ -50,12 +50,12 @@ pub const Player = struct {
 
         if (rl.isKeyDown(.key_left)) {
             self.direction = -1.0;
-            self.calcLeftSnap(self.position.x);
+            self.calcLeftSnap(self.position.x - velocity);
             self.snap_distance -= velocity;
             self.touch_motion = false;
         } else if (rl.isKeyDown(.key_right)) {
             self.direction = 1.0;
-            self.calcRightSnap(self.position.x);
+            self.calcRightSnap(self.position.x + velocity);
             self.snap_distance -= velocity;
             self.touch_motion = false;
         } else if (rl.getTouchPointCount() >= 1) {
