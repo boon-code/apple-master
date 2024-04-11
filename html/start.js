@@ -1,6 +1,3 @@
-//var statusElement = document.getElementById("status");
-//var progressElement = document.getElementById("progress");
-//var spinnerElement = document.getElementById("spinner");
 var Module = {
     print: function (...t) {
         var n = t.join(" ");
@@ -18,5 +15,4 @@ var Module = {
         console.log(`Status: ${e}`);
     },
     totalDependencies: 0,
-
 };
