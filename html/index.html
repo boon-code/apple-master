@@ -1,15 +1,49 @@
 <!DOCTYPE html>
 <html lang=en-us>
-    <head>
-        <meta charset=utf-8>
-        <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
-        <title>Apple Master Revived</title>
-    </head>
-    <body>
-        <div>
-            <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-        </div>
-        <script src="start.js"></script>
-        <script async src=index.js></script>
-    </body>
+  <head>
+    <meta charset=utf-8>
+    <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
+    <title>Apple Master Revived</title>
+    <style>
+      html,body {
+        height: 100%;
+        margin: 0;
+      }
+      canvas {
+        display: block;
+        margin: 0 0 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="1024" height="768" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    <script>
+      function resize() {
+        const canvas = document.querySelector('canvas');
+        canvas.width = 1024;
+        canvas.height = 768;
+        const nrat = 1024 / 768;
+        const wrat = window.innerWidth / window.innerHeight;
+        var w = "auto";
+        var h = "auto";
+        if (wrat > nrat) {
+          h = "100vh";
+        } else {
+          w = "100vw";
+        }
+        canvas.style.width = w;
+        canvas.style.height = h;
+      }
+
+      resize();
+
+      const observer = new ResizeObserver((_x) => {
+        resize();
+      });
+
+      observer.observe(canvas)
+    </script>
+    <script src="start.js"></script>
+    <script async src=index.js></script>
+  </body>
 </html>
