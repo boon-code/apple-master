@@ -98,8 +98,11 @@ pub const State = struct {
     }
 
     pub fn updateHealth(self: *Self) void {
+        if (self.health <= 0.0) {
+            return;
+        }
         self.health -= self.level.health_decrease_f * constants.fps * self.delta;
-        if (self.health < 0.0) {
+        if (self.health <= 0.0) {
             self.health = 0.0;
             std.debug.print("You ran out of time\n", .{});
         }
@@ -186,8 +189,12 @@ pub const State = struct {
     }
 
     pub fn draw(self: *Self) void {
+        const text_offset_y = 250;
         // Background
         self.background.drawTexture(0, 0, rl.Color.white);
+
+        rl.drawText("Apple Master", 60, text_offset_y, 100, rl.Color.light_gray);
+        rl.drawText("Revived", 240, text_offset_y + 120, 100, rl.Color.light_gray);
         self.drawHealthBar();
 
         // Key map
