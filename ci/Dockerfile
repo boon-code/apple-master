@@ -13,7 +13,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 
 ENV ZIG_VERSION 0.11.0
 
-RUN curl -o /tmp/zig-${ZIG_VERSION}.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+RUN curl -L -o /tmp/zig-${ZIG_VERSION}.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+ && echo "2d00e789fec4f71790a6e7bf83ff91d564943c5ee843c5fd966efc474b423047  /tmp/zig-${ZIG_VERSION}.tar.xz" | sha256sum -c - \
  && cd /tmp \
  && tar xf zig-${ZIG_VERSION}.tar.xz \
  && cp -r "/tmp/zig-linux-x86_64-${ZIG_VERSION}" /opt/zig \
