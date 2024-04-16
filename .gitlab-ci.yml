@@ -17,6 +17,7 @@ variables:
     description: "If set, build and deploy"
     options:
       - "yes"
+      - "pages-only"
       - "no"
     value: "no"
 
@@ -65,9 +66,10 @@ pages:
   stage: deploy
   image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
   rules:
-    - if: ($DEPLOY == 'yes')
+    - if: ($DEPLOY == 'yes') || ($DEPLOY == 'pages-only')
   script:
     - ./ci/build-html5.sh
+    - if [ "x$DEPLOY" = "xyes" ]; then ./ci/publish-html5.sh; fi
   artifacts:
     paths:
       - public
