@@ -17,7 +17,7 @@ variables:
     description: "If set, build and deploy"
     options:
       - "yes"
-      - "pages-only"
+      - "only-gitlab"
       - "no"
     value: "no"
 
@@ -66,7 +66,7 @@ pages:
   stage: deploy
   image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
   rules:
-    - if: ($DEPLOY == 'yes') || ($DEPLOY == 'pages-only')
+    - if: ($DEPLOY == 'yes') || ($DEPLOY == 'only-gitlab')
   script:
     - ./ci/build-html5.sh
     - if [ "x$DEPLOY" = "xyes" ]; then ./ci/publish-html5.sh; fi
@@ -74,3 +74,18 @@ pages:
     paths:
       - public
   environment: production
+
+job_native:
+  stage: deploy
+  image: "$CI_REGISTRY/zahnputzmonster/apple-master:latest"
+  rules:
+    - if: ($DEPLOY == 'yes') || ($DEPLOY == 'only-gitlab')
+  script:
+    - ./ci/build-linux.sh
+    - ./ci/build-win.sh
+    - if [ "x$DEPLOY" = "xyes" ]; then ./ci/publish-linux.sh; fi
+    - if [ "x$DEPLOY" = "xyes" ]; then ./ci/publish-win.sh; fi
+  artifacts:
+    paths:
+      - zig-out/bin/apple-master
+      - zig-out/bin/apple-master.exe
