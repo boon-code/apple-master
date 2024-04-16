@@ -8,6 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         vim \
         tar \
         xz-utils \
+        unzip \
  && rm -rf /var/lib/apt/lists/*
 
 ENV ZIG_VERSION 0.11.0
@@ -50,3 +51,15 @@ RUN echo 'source /opt/env.sh' >> /etc/bash.bashrc
 # Based on these guides:
 # - https://emscripten.org/docs/getting_started/downloads.html
 # - https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)
+
+# Add butler
+
+ENV BUTLER_VERSION 15.21.0
+
+RUN mkdir -p /opt/butler \
+ && cd /opt/butler \
+ && curl -L -o butler.zip "https://broth.itch.zone/butler/linux-amd64/${BUTLER_VERSION}/archive/default" \
+ && echo -n "b640fceade5cafc7601b0ee57ba13c85913917eb5440375f7a605126f9ca2e1c  butler.zip" | sha256sum -c - \
+ && unzip butler.zip \
+ && rm butler.zip \
+ && ( echo ""; echo "PATH=\"\${PATH}:/opt/butler\""; echo "LD_LIBRARY_PATH=\"/opt/butler\""; ) >> /opt/env.sh
