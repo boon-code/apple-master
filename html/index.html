@@ -8,14 +8,15 @@
       html,body {
         height: 100%;
         margin: 0;
+        background-color: black;
       }
       canvas {
         display: block;
-        margin: 0 0 0 0;
+        margin: 0 auto;
       }
     </style>
   </head>
-  <body>
+  <body onresize="resize()">
     <canvas id="canvas" width="1024" height="768" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     <script>
       function resize() {
@@ -33,11 +34,13 @@
         }
         canvas.style.width = w;
         canvas.style.height = h;
+        console.log("Resized");
       }
 
       resize();
 
       const observer = new ResizeObserver((_x) => {
+        console.log("Resize observer triggered");
         resize();
       });
 
