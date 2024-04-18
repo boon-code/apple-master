@@ -34,11 +34,13 @@
         }
         canvas.style.width = w;
         canvas.style.height = h;
+        console.log("Resized");
       }
 
       resize();
 
       const observer = new ResizeObserver((_x) => {
+        console.log("Resize observer triggered");
         resize();
       });
 
